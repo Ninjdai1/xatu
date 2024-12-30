@@ -126,7 +126,7 @@ public class Main {
                         String.format("[%d](https://github.com/rh-hideout/pokeemerald-expansion/pulls?q=is%%3Apr+sort%%3Aupdated-asc+created%%3A%s..%s) | [%d](https://github.com/rh-hideout/pokeemerald-expansion/pulls?q=is%%3Apr+sort%%3Aupdated-asc+created%%3A%s..%s) | [%d](https://github.com/rh-hideout/pokeemerald-expansion/pulls?q=is%%3Apr+sort%%3Aupdated-asc+created%%3A%s..%s) | [%d](https://github.com/rh-hideout/pokeemerald-expansion/pulls?q=is%%3Apr+sort%%3Aupdated-asc+created%%3A%s..%s) | [%d](https://github.com/rh-hideout/pokeemerald-expansion/pulls?q=is%%3Apr+sort%%3Aupdated-asc)\n\n",
                                 details.opened_pr_1, dateTimeDay, dateTimeNow, details.opened_pr_7, dateTimeWeek, dateTimeNow, details.opened_pr_30, dateTimeMonth, dateTimeNow, details.opened_pr_365, dateTimeYear, dateTimeNow, details.opened_pr_all
                         ),
-                        true
+                        false
                 )
                 .addField(
                         "Merged PRs",
@@ -143,8 +143,30 @@ public class Main {
                         ),
                         false
                 )
+                .addField(
+                        "Opened Issues",
+                        String.format("[%d](https://github.com/rh-hideout/pokeemerald-expansion/issues?q=is%%3Aissue+sort%%3Aupdated-asc+created%%3A%s..%s) | [%d](https://github.com/rh-hideout/pokeemerald-expansion/issues?q=is%%3Aissue+sort%%3Aupdated-asc+created%%3A%s..%s) | [%d](https://github.com/rh-hideout/pokeemerald-expansion/issues?q=is%%3Aissue+sort%%3Aupdated-asc+created%%3A%s..%s) | [%d](https://github.com/rh-hideout/pokeemerald-expansion/issues?q=is%%3Aissue+sort%%3Aupdated-asc+created%%3A%s..%s) | [%d](https://github.com/rh-hideout/pokeemerald-expansion/issues?q=is%%3Aissue+sort%%3Aupdated-asc)\n\n",
+                                details.opened_issue_1, dateTimeDay, dateTimeNow, details.opened_issue_7, dateTimeWeek, dateTimeNow, details.opened_issue_30, dateTimeMonth, dateTimeNow, details.opened_issue_365, dateTimeYear, dateTimeNow, details.opened_issue_all
+                        ),
+                        false
+                )
+                .addField(
+                        "Closed Issues",
+                        String.format("[%d](https://github.com/rh-hideout/pokeemerald-expansion/issues?q=is%%3Aissue+is%%3Amerged+sort%%3Aupdated-asc+draft%%3Afalse+merged%%3A%s..%s) | [%d](https://github.com/rh-hideout/pokeemerald-expansion/issues?q=is%%3Aissue+is%%3Amerged+sort%%3Aupdated-asc+draft%%3Afalse+merged%%3A%s..%s) | [%d](https://github.com/rh-hideout/pokeemerald-expansion/issues?q=is%%3Aissue+is%%3Amerged+sort%%3Aupdated-asc+draft%%3Afalse+merged%%3A%s..%s) | [%d](https://github.com/rh-hideout/pokeemerald-expansion/issues?q=is%%3Aissue+is%%3Amerged+sort%%3Aupdated-asc+draft%%3Afalse+merged%%3A%s..%s) | [%d](https://github.com/rh-hideout/pokeemerald-expansion/issues?q=is%%3Aissue+is%%3Amerged+sort%%3Aupdated-asc+draft%%3Afalse)\n\n",
+                                details.closed_issue_1, dateTimeDay, dateTimeNow, details.closed_issue_7, dateTimeWeek, dateTimeNow, details.closed_issue_30, dateTimeMonth, dateTimeNow, details.closed_issue_365, dateTimeYear, dateTimeNow, details.closed_issue_all
+                        ),
+                        true
+                )
+                .addField(
+                        "Issues Metrics",
+                        String.format("Resolution Rate: %.2g | %.2g | %.2g | %.2g | %.2g\nGrowth: %d | %d | %d | %d | %d",
+                                ((float)details.closed_issue_1) / ((float)details.opened_issue_1), ((float)details.closed_issue_7) / ((float)details.opened_issue_7), ((float)details.closed_issue_30) / ((float)details.opened_issue_30), ((float)details.closed_issue_365) / ((float)details.opened_issue_365), ((float)details.closed_issue_all) / ((float)details.opened_issue_all),
+                                details.closed_issue_1 - details.opened_issue_1, details.closed_issue_7 - details.opened_issue_7, details.closed_issue_30 - details.opened_issue_30, details.closed_issue_365 - details.opened_issue_365, details.closed_issue_all - details.opened_issue_all
+                        ),
+                        false
+                )
                 .timestamp(fetchInstant)
-                .footer("Written with ❤️by Ninjdai", "https://archives.bulbagarden.net/media/upload/e/eb/BT178.png")
+                .footer("Written with ❤️ by Ninjdai", "https://archives.bulbagarden.net/media/upload/e/eb/BT178.png")
                 .build();
     }
 }

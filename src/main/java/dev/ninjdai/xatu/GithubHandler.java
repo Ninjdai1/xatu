@@ -124,7 +124,7 @@ public class GithubHandler {
                             false
                     )
                     .timestamp(Instant.now())
-                    .footer("Written with ❤️by Ninjdai", "https://archives.bulbagarden.net/media/upload/e/eb/BT178.png")
+                    .footer("Written with ❤️ by Ninjdai", "https://archives.bulbagarden.net/media/upload/e/eb/BT178.png")
                     .build();
 
             Details details = new Details();

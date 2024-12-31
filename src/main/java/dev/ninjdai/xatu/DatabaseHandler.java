@@ -2,11 +2,12 @@ package dev.ninjdai.xatu;
 
 import dev.ninjdai.xatu.data.Details;
 import dev.ninjdai.xatu.data.ServerConfig;
+import dev.ninjdai.xatu.data.ServerMetadata;
 import discord4j.common.util.Snowflake;
+import reactor.util.annotation.NonNull;
 
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.List;
 
 public class DatabaseHandler {
     public static Connection databaseConnection;
@@ -41,11 +42,17 @@ public class DatabaseHandler {
         String discord_data_query = """
             CREATE TABLE IF NOT EXISTS "discord_data" (
                 "server_id"	INTEGER NOT NULL UNIQUE,
-                "fetch_cron"	TEXT,
+                "fetch_cron"	INTEGER,
                 "repo_name"	TEXT,
                 "channel_id"	INTEGER,
-                "big_feature_freeze_timestamp"	INTEGER,
-                "merge_freeze_timestamp"	INTEGER,
+                PRIMARY KEY("server_id")
+            ) WITHOUT ROWID;""";
+        String metadata_query = """
+            CREATE TABLE IF NOT EXISTS "metadata" (
+                "server_id"	INTEGER NOT NULL UNIQUE,
+                "current_version"	TEXT,
+                "minor_release_timestamp"	INTEGER,
+                "patch_release_timestamp"	INTEGER,
                 PRIMARY KEY("server_id")
             ) WITHOUT ROWID;""";
 
@@ -54,11 +61,119 @@ public class DatabaseHandler {
             Statement stmt = databaseConnection.createStatement();
             stmt.execute(github_data_query);
             stmt.execute(discord_data_query);
+            stmt.execute(metadata_query);
         } catch (SQLException e) {
             Main.LOGGER.error("Error initializing database", e);
         } finally {
             Main.LOGGER.info("Database initialized");
         }
+    }
+
+    public static void addServerMetadata(@NonNull ServerMetadata metadata) {
+        ServerMetadata oldMetadata = getServerMetadata(metadata.server_id);
+        if (oldMetadata == null) {
+            String sql = "INSERT INTO metadata VALUES(?,?,?,?)";
+            try (PreparedStatement pstmt = databaseConnection.prepareStatement(sql)) {
+                pstmt.setLong(1, metadata.server_id.asLong());
+                pstmt.setString(2, metadata.current_version);
+
+                if (metadata.minor_release_timestamp == null) pstmt.setNull(3, Types.INTEGER);
+                else pstmt.setLong(3, metadata.minor_release_timestamp);
+
+                if (metadata.patch_release_timestamp==null) pstmt.setNull(4, Types.INTEGER);
+                else pstmt.setLong(4, metadata.patch_release_timestamp);
+
+                pstmt.executeUpdate();
+            } catch (SQLException e) {
+                Main.LOGGER.error("Error adding server config to database", e);
+            }
+        } else {
+            String sql = "UPDATE metadata SET current_version=?, minor_release_timestamp=?, patch_release_timestamp=? WHERE server_id=?";
+            try (PreparedStatement pstmt = databaseConnection.prepareStatement(sql)) {
+                pstmt.setString(1, metadata.current_version == null ? oldMetadata.current_version : metadata.current_version);
+
+                if (metadata.minor_release_timestamp == null) {
+                    if (oldMetadata.minor_release_timestamp == null) pstmt.setNull(2, Types.NULL);
+                    else pstmt.setLong(2, oldMetadata.minor_release_timestamp);
+                } else pstmt.setLong(2, metadata.minor_release_timestamp);
+
+                if (metadata.patch_release_timestamp == null) {
+                    if (oldMetadata.patch_release_timestamp == null) pstmt.setNull(3, Types.NULL);
+                    else pstmt.setLong(3, oldMetadata.patch_release_timestamp);
+                } else pstmt.setLong(3, metadata.patch_release_timestamp);
+                pstmt.setLong(4, metadata.server_id.asLong());
+                pstmt.executeUpdate();
+            } catch (SQLException e) {
+                Main.LOGGER.error("Error updating server config in database", e);
+            }
+        }
+    }
+
+    public static ServerMetadata getServerMetadata(Snowflake serverId) {
+        String sql = "SELECT * FROM metadata WHERE server_id = ?";
+        try(PreparedStatement pstmt = databaseConnection.prepareStatement(sql)) {
+            pstmt.setLong(1, serverId.asLong());
+            var rs = pstmt.executeQuery();
+            if (rs.next()) {
+                ServerMetadata metadata = new ServerMetadata();
+                metadata.server_id = Snowflake.of(rs.getString("server_id"));
+                metadata.current_version = rs.getString("current_version");
+                metadata.minor_release_timestamp = rs.getLong("minor_release_timestamp");
+                metadata.patch_release_timestamp = rs.getLong("patch_release_timestamp");
+                return metadata;
+            }
+        } catch (SQLException e) {
+            Main.LOGGER.error("Error reading server metadata from databases:", e);
+        }
+        return null;
+    }
+
+    public static void addServer(ServerConfig config) {
+        ServerConfig oldConfig = getServer(config.server_id);
+        if (oldConfig == null) {
+            String sql = "INSERT INTO discord_data VALUES(?,?,?,?)";
+            try (PreparedStatement pstmt = databaseConnection.prepareStatement(sql)) {
+                pstmt.setLong(1, config.server_id.asLong());
+                pstmt.setInt(2, config.fetch_cron);
+                pstmt.setString(3, config.repo_name);
+                pstmt.setLong(4, config.channel_id.asLong());
+                pstmt.executeUpdate();
+            } catch (SQLException e) {
+                Main.LOGGER.error("Error adding server config to database", e);
+            }
+        } else {
+            SchedulerManager.removeServerJob(oldConfig);
+            String sql = "UPDATE discord_data SET fetch_cron=?, repo_name=?, channel_id=? WHERE server_id=?";
+            try (PreparedStatement pstmt = databaseConnection.prepareStatement(sql)) {
+                pstmt.setInt(1, config.fetch_cron);
+                pstmt.setString(2, config.repo_name);
+                pstmt.setLong(3, config.channel_id.asLong());
+                pstmt.setLong(4, config.server_id.asLong());
+                pstmt.executeUpdate();
+            } catch (SQLException e) {
+                Main.LOGGER.error("Error updating server config in database", e);
+            }
+        }
+        SchedulerManager.addServerJob(config);
+    }
+
+    public static ServerConfig getServer(Snowflake serverId) {
+        String sql = "SELECT * FROM discord_data WHERE server_id = ?";
+        try(PreparedStatement pstmt = databaseConnection.prepareStatement(sql)) {
+            pstmt.setLong(1, serverId.asLong());
+            var rs = pstmt.executeQuery();
+            if (rs.next()) {
+                ServerConfig config = new ServerConfig();
+                config.server_id = Snowflake.of(rs.getString("server_id"));
+                config.fetch_cron = rs.getInt("fetch_cron");
+                config.repo_name = rs.getString("repo_name");
+                config.channel_id = Snowflake.of(rs.getString("channel_id"));
+                return config;
+            }
+        } catch (SQLException e) {
+            Main.LOGGER.error("Error reading server configuration from databases:", e);
+        }
+        return null;
     }
 
     public static ArrayList<ServerConfig> getServers() {
@@ -69,11 +184,9 @@ public class DatabaseHandler {
             while (rs.next()) {
                 ServerConfig config = new ServerConfig();
                 config.server_id = Snowflake.of(rs.getString("server_id"));
-                config.fetch_cron = rs.getString("fetch_cron");
+                config.fetch_cron = rs.getInt("fetch_cron");
                 config.repo_name = rs.getString("repo_name");
-                config.channel_id = Snowflake.of(rs.getString("server_id"));
-                config.big_feature_freeze_timestamp = rs.getInt("big_feature_freeze_timestamp");
-                config.merge_freeze_timestamp = rs.getInt("merge_freeze_timestamp");
+                config.channel_id = Snowflake.of(rs.getString("channel_id"));
                 serverConfigs.add(config);
             }
         } catch (SQLException e) {

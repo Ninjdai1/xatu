@@ -4,10 +4,17 @@ import discord4j.common.util.Snowflake;
 
 public class ServerConfig {
     public Snowflake server_id;
-    public String fetch_cron;
+    public int fetch_cron;
     public String repo_name;
     public Snowflake channel_id;
 
-    public int big_feature_freeze_timestamp;
-    public int merge_freeze_timestamp;
+    @Override
+    public String toString() {
+        return "ServerConfig{" +
+                "server_id=" + server_id +
+                ", fetch_cron=" + fetch_cron +
+                ", repo_name='" + repo_name + '\'' +
+                ", channel_id=" + channel_id +
+                '}';
+    }
 }

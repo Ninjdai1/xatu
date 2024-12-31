@@ -5,14 +5,15 @@ import dev.ninjdai.xatu.data.ServerConfig;
 import discord4j.common.util.Snowflake;
 import discord4j.core.DiscordClient;
 import discord4j.core.GatewayDiscordClient;
+import discord4j.core.event.domain.interaction.ApplicationCommandInteractionEvent;
 import discord4j.core.event.domain.interaction.ComponentInteractionEvent;
+import discord4j.core.event.domain.interaction.ModalSubmitInteractionEvent;
 import discord4j.core.event.domain.lifecycle.ReadyEvent;
 import discord4j.core.object.entity.User;
 import discord4j.core.spec.EmbedCreateSpec;
 import discord4j.core.spec.InteractionApplicationCommandCallbackSpec;
 import discord4j.rest.util.Color;
 import org.quartz.*;
-import org.quartz.impl.StdSchedulerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
@@ -23,82 +24,66 @@ import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
 
 public class Main {
     public static Map<Snowflake, ServerConfig> SERVER_CONFIGS;
-    public static Scheduler SCHEDULER;
     public static DiscordClient DISCORD_CLIENT;
     public static Logger LOGGER = LoggerFactory.getLogger("Xatu");
 
     public static void main(String[] args) {
         DISCORD_CLIENT = DiscordClient.create(System.getenv("DISCORD_TOKEN"));
         GithubHandler.init(System.getenv("GITHUB_TOKEN"));
-        DatabaseHandler.init("jdbc:sqlite:xatu.db");
-        try {
-            SCHEDULER = StdSchedulerFactory.getDefaultScheduler();
+        DatabaseHandler.init("jdbc:sqlite:%s/xatu.db".formatted(System.getenv("DB_DIR") != null ? System.getenv("DB_DIR") : "."));
+        SchedulerManager.init();
 
-            {
-                List<ServerConfig> serverConfigList = DatabaseHandler.getServers();
-                SERVER_CONFIGS = new HashMap<>(serverConfigList.size());
-                for (ServerConfig sc : serverConfigList) SERVER_CONFIGS.put(sc.server_id, sc);
-                LOGGER.info("{} servers loaded", SERVER_CONFIGS.size());
+        {
+            List<ServerConfig> serverConfigList = DatabaseHandler.getServers();
+            SERVER_CONFIGS = new HashMap<>(serverConfigList.size());
+            for (ServerConfig serverConfig : serverConfigList) {
+                SchedulerManager.addServerJob(serverConfig);
             }
-
-            for (ServerConfig serverConfig : SERVER_CONFIGS.values()) {
-                Trigger trigger = TriggerBuilder.newTrigger()
-                        .withIdentity("trigger-" + serverConfig.server_id.asString() + "-" + serverConfig.repo_name, "fetch-schedules")
-                        .withSchedule(CronScheduleBuilder
-                                .dailyAtHourAndMinute(Integer.parseInt(serverConfig.fetch_cron), 0)
-                                .inTimeZone(TimeZone.getTimeZone("GMT"))
-                        )
-                        .build();
-                JobDataMap jobDataMap = new JobDataMap();
-                jobDataMap.put("server_config", serverConfig);
-
-                JobDetail job = JobBuilder.newJob(DataSendingJob.class)
-                        .withIdentity("job-" + serverConfig.server_id.asString() + "-" + serverConfig.repo_name, "fetch-schedules")
-                        .usingJobData(jobDataMap)
-                        .build();
-                SCHEDULER.scheduleJob(job, trigger);
-            }
-
-            Mono<Void> login = DISCORD_CLIENT.withGateway((GatewayDiscordClient gateway) -> {
-                Mono<Void> printOnLogin = gateway.on(ReadyEvent.class, event ->
-                                Mono.fromRunnable(() -> {
-                                    final User self = event.getSelf();
-                                    LOGGER.info("Logged in as {}", self.getUsername());
-                                    try {
-                                        SCHEDULER.start();
-                                    } catch (SchedulerException e) {
-                                        LOGGER.error("Error starting scheduler", e);
-                                    }
-                                })).doOnError(throwable -> Main.LOGGER.error("Error on ready event", throwable))
-                        .then();
-
-                Mono<Void> handleComponentInteractions = gateway.on(ComponentInteractionEvent.class, event -> {
-                    if (event.getCustomId().startsWith("details:")) { // details:repo_owner/repo:timestamp
-                        String[] interactionArgs = event.getCustomId().split(":");
-                        String repo = interactionArgs[1];
-                        long timestamp = Long.parseLong(interactionArgs[2]);
-                        Details details = DatabaseHandler.getDetails(repo, timestamp);
-                        EmbedCreateSpec embed = makeAddendumeEmbed(details, timestamp);
-                        InteractionApplicationCommandCallbackSpec spec = InteractionApplicationCommandCallbackSpec.builder()
-                                .addEmbed(embed)
-                                .ephemeral(true)
-                                .build();
-                        event.reply(spec).subscribe();
-                    }
-                    return Mono.empty();
-                }).then();
-
-                return printOnLogin.and(handleComponentInteractions);
-            });
-
-            login.block();
-        } catch (SchedulerException e) {
-            LOGGER.error("Error setting up scheduler", e);
+            LOGGER.info("{} servers loaded", SERVER_CONFIGS.size());
         }
+
+        Mono<Void> login = DISCORD_CLIENT.withGateway((GatewayDiscordClient gateway) -> {
+            Mono<Void> printOnLogin = gateway.on(ReadyEvent.class, event ->
+                            Mono.fromRunnable(() -> {
+                                final User self = event.getSelf();
+                                InteractionHandler.init();
+                                SchedulerManager.start();
+                                LOGGER.info("Logged in as {} and ready to fetch !", self.getUsername());
+                            })).doOnError(throwable -> Main.LOGGER.error("Error on ready event", throwable))
+                    .then();
+
+            Mono<Void> handleComponentInteractions = gateway.on(ComponentInteractionEvent.class, event -> {
+                if (event.getCustomId().startsWith("details:")) { // details:repo_owner/repo:timestamp
+                    String[] interactionArgs = event.getCustomId().split(":");
+                    String repo = interactionArgs[1];
+                    long timestamp = Long.parseLong(interactionArgs[2]);
+                    Details details = DatabaseHandler.getDetails(repo, timestamp);
+                    EmbedCreateSpec embed = makeAddendumeEmbed(details, timestamp);
+                    InteractionApplicationCommandCallbackSpec spec = InteractionApplicationCommandCallbackSpec.builder()
+                            .addEmbed(embed)
+                            .ephemeral(true)
+                            .build();
+                    event.reply(spec).subscribe();
+                }
+                return Mono.empty();
+            }).then();
+
+            Mono<Void> handleCommandInteractions = gateway.on(ApplicationCommandInteractionEvent.class, event -> {
+                InteractionHandler.execute(event);
+                return Mono.empty();
+            }).then();
+            Mono<Void> handleModalInteractions = gateway.on(ModalSubmitInteractionEvent.class, event -> {
+                InteractionHandler.execute(event);
+                return Mono.empty();
+            }).then();
+
+            return printOnLogin.and(handleComponentInteractions).and(handleCommandInteractions).and(handleModalInteractions);
+        });
+
+        login.block();
     }
 
     static EmbedCreateSpec makeAddendumeEmbed(Details details, long timestamp) {

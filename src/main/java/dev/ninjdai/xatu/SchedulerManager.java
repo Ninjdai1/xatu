@@ -38,10 +38,11 @@ public class SchedulerManager {
         jobDataMap.put("server_config", serverConfig);
 
         JobDetail job = JobBuilder.newJob(DataSendingJob.class)
-                .withIdentity("job-" + serverConfig.server_id.asString() + "-" + serverConfig.repo_name, "fetch-schedules")
+                .withIdentity("job:" + serverConfig.server_id.asString() + ":" + serverConfig.repo_name, "fetch-schedules")
                 .usingJobData(jobDataMap)
                 .build();
         try {
+            if(SCHEDULER.checkExists(job.getKey())) SCHEDULER.deleteJob(job.getKey());
             SCHEDULER.scheduleJob(job, trigger);
         } catch (SchedulerException e) {
             Main.LOGGER.error("Error adding server job to scheduler", e);

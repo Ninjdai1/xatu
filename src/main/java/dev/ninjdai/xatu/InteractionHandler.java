@@ -3,6 +3,7 @@ package dev.ninjdai.xatu;
 import dev.ninjdai.xatu.interactions.commands.Command;
 import dev.ninjdai.xatu.interactions.commands.ConfigCommand;
 import dev.ninjdai.xatu.interactions.commands.ReleaseCommand;
+import dev.ninjdai.xatu.interactions.commands.TriggerCommand;
 import dev.ninjdai.xatu.interactions.modals.ConfigModal;
 import dev.ninjdai.xatu.interactions.modals.Modal;
 import discord4j.core.event.domain.interaction.ApplicationCommandInteractionEvent;
@@ -19,6 +20,7 @@ public class InteractionHandler {
 
         COMMANDS.put("config", new ConfigCommand());
         COMMANDS.put("release", new ReleaseCommand());
+        COMMANDS.put("trigger", new TriggerCommand());
         //MODALS.put("config", new ConfigModal());
 
         for (Command command: COMMANDS.values()) {

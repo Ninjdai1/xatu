@@ -45,6 +45,7 @@ public class DatabaseHandler {
                 "fetch_cron"	INTEGER,
                 "repo_name"	TEXT,
                 "channel_id"	INTEGER,
+                "second_channel_id"	INTEGER,
                 PRIMARY KEY("server_id")
             ) WITHOUT ROWID;""";
         String metadata_query = """
@@ -131,24 +132,28 @@ public class DatabaseHandler {
     public static void addServer(ServerConfig config) {
         ServerConfig oldConfig = getServer(config.server_id);
         if (oldConfig == null) {
-            String sql = "INSERT INTO discord_data VALUES(?,?,?,?)";
+            String sql = "INSERT INTO discord_data VALUES(?,?,?,?,?)";
             try (PreparedStatement pstmt = databaseConnection.prepareStatement(sql)) {
                 pstmt.setLong(1, config.server_id.asLong());
                 pstmt.setInt(2, config.fetch_cron);
                 pstmt.setString(3, config.repo_name);
                 pstmt.setLong(4, config.channel_id.asLong());
+                if (config.second_channel_id != null) pstmt.setLong(5, config.second_channel_id.asLong());
+                else pstmt.setNull(5, Types.INTEGER);
                 pstmt.executeUpdate();
             } catch (SQLException e) {
                 Main.LOGGER.error("Error adding server config to database", e);
             }
         } else {
             SchedulerManager.removeServerJob(oldConfig);
-            String sql = "UPDATE discord_data SET fetch_cron=?, repo_name=?, channel_id=? WHERE server_id=?";
+            String sql = "UPDATE discord_data SET fetch_cron=?, repo_name=?, channel_id=?, second_channel_id=? WHERE server_id=?";
             try (PreparedStatement pstmt = databaseConnection.prepareStatement(sql)) {
                 pstmt.setInt(1, config.fetch_cron);
                 pstmt.setString(2, config.repo_name);
                 pstmt.setLong(3, config.channel_id.asLong());
                 pstmt.setLong(4, config.server_id.asLong());
+                if (config.second_channel_id != null) pstmt.setLong(5, config.second_channel_id.asLong());
+                else pstmt.setNull(5, Types.INTEGER);
                 pstmt.executeUpdate();
             } catch (SQLException e) {
                 Main.LOGGER.error("Error updating server config in database", e);
@@ -168,6 +173,7 @@ public class DatabaseHandler {
                 config.fetch_cron = rs.getInt("fetch_cron");
                 config.repo_name = rs.getString("repo_name");
                 config.channel_id = Snowflake.of(rs.getString("channel_id"));
+                config.second_channel_id = Snowflake.of(rs.getString("second_channel_id"));
                 return config;
             }
         } catch (SQLException e) {
@@ -187,6 +193,7 @@ public class DatabaseHandler {
                 config.fetch_cron = rs.getInt("fetch_cron");
                 config.repo_name = rs.getString("repo_name");
                 config.channel_id = Snowflake.of(rs.getString("channel_id"));
+                config.second_channel_id = Snowflake.of(rs.getString("second_channel_id"));
                 serverConfigs.add(config);
             }
         } catch (SQLException e) {

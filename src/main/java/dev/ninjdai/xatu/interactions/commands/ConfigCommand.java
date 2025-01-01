@@ -41,6 +41,13 @@ public class ConfigCommand implements Command {
                                 .description("Channel in which the reports will be sent")
                                 .required(true)
                                 .build())
+                        .addOption(ApplicationCommandOptionData.builder()
+                                .type(CHANNEL_OPTION_TYPE)
+                                .addChannelType(GUILD_TEXT_CHANNEL_TYPE)
+                                .name("second_channel")
+                                .description("Second channel in which to send the reports")
+                                .required(false)
+                                .build())
                         .build())
                 .addOption(ApplicationCommandOptionData.builder()
                         .type(SUBCOMMAND_OPTION_TYPE)
@@ -95,6 +102,8 @@ public class ConfigCommand implements Command {
             }
             config.fetch_cron = (int) fetch_time;
             config.channel_id = setupOption.get().getOption("channel").get().getValue().get().asChannel().block().getId();
+            setupOption.get().getOption("second_channel").ifPresent(option ->
+                    config.second_channel_id = option.getValue().get().asChannel().block().getId());
 
             DatabaseHandler.addServer(config);
             event.reply("Configuration complete !\nThe github repo `%s` will be fetched every day at %s:00 GMT and the recap will be sent in <#%d>".formatted(config.repo_name, config.fetch_cron, config.channel_id.asLong()))

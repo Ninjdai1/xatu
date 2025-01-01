@@ -14,4 +14,6 @@ public interface Command {
     int USER_OPTION_TYPE = 6;
     int CHANNEL_OPTION_TYPE = 7;
     int ROLE_OPTION_TYPE = 8;
+
+    int GUILD_TEXT_CHANNEL_TYPE = 0;
 }

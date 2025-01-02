@@ -124,7 +124,7 @@ public class Main {
                         "PR Metrics",
                         String.format("Merge Rate: %.2g | %.2g | %.2g | %.2g | %.2g\nGrowth: %d | %d | %d | %d | %d",
                                 ((float)details.merged_pr_1) / ((float)details.opened_pr_1), ((float)details.merged_pr_7) / ((float)details.opened_pr_7), ((float)details.merged_pr_30) / ((float)details.opened_pr_30), ((float)details.merged_pr_365) / ((float)details.opened_pr_365), ((float)details.merged_pr_all) / ((float)details.opened_pr_all),
-                                details.merged_pr_1 - details.opened_pr_1, details.merged_pr_7 - details.opened_pr_7, details.merged_pr_30 - details.opened_pr_30, details.merged_pr_365 - details.opened_pr_365, details.merged_pr_all - details.opened_pr_all
+                                details.opened_pr_1 - details.merged_pr_1, details.opened_pr_7 - details.merged_pr_7, details.opened_pr_30 - details.merged_pr_30, details.opened_pr_365 - details.merged_pr_365, details.opened_pr_all - details.merged_pr_all
                         ),
                         false
                 )
@@ -146,7 +146,7 @@ public class Main {
                         "Issues Metrics",
                         String.format("Resolution Rate: %.2g | %.2g | %.2g | %.2g | %.2g\nGrowth: %d | %d | %d | %d | %d",
                                 ((float)details.closed_issue_1) / ((float)details.opened_issue_1), ((float)details.closed_issue_7) / ((float)details.opened_issue_7), ((float)details.closed_issue_30) / ((float)details.opened_issue_30), ((float)details.closed_issue_365) / ((float)details.opened_issue_365), ((float)details.closed_issue_all) / ((float)details.opened_issue_all),
-                                details.closed_issue_1 - details.opened_issue_1, details.closed_issue_7 - details.opened_issue_7, details.closed_issue_30 - details.opened_issue_30, details.closed_issue_365 - details.opened_issue_365, details.closed_issue_all - details.opened_issue_all
+                                details.opened_issue_1 - details.closed_issue_1, details.opened_issue_7 - details.closed_issue_7, details.opened_issue_30 - details.closed_issue_30, details.opened_issue_365 - details.closed_issue_365, details.opened_issue_all - details.closed_issue_all
                         ),
                         false
                 )

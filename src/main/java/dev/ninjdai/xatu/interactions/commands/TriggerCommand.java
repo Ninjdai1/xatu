@@ -5,10 +5,13 @@ import dev.ninjdai.xatu.Main;
 import dev.ninjdai.xatu.SchedulerManager;
 import dev.ninjdai.xatu.data.ServerConfig;
 import discord4j.core.event.domain.interaction.ApplicationCommandInteractionEvent;
+import discord4j.core.object.entity.Role;
 import discord4j.discordjson.json.ApplicationCommandRequest;
 import discord4j.rest.util.Permission;
 import org.quartz.JobKey;
 import org.quartz.SchedulerException;
+
+import java.util.List;
 
 public class TriggerCommand implements Command{
     @Override
@@ -21,8 +24,17 @@ public class TriggerCommand implements Command{
 
     @Override
     public void execute(ApplicationCommandInteractionEvent event) {
-        if (event.getInteraction().getGuildId().isEmpty() || event.getInteraction().getMember().isEmpty()) return;
-        if (!event.getInteraction().getMember().get().getBasePermissions().block().contains(Permission.ADMINISTRATOR)) return;
+        {
+            if (event.getInteraction().getGuildId().isEmpty() || event.getInteraction().getMember().isEmpty()) {
+                event.reply("Command must be used in a guild").withEphemeral(true).subscribe();
+                return;
+            }
+            List<Role> roles = event.getInteraction().getMember().get().getRoles().collectList().block();
+            if (event.getInteraction().getMember().isEmpty() || roles == null || roles.stream().noneMatch(role -> role.getId().asString().equals("1077007974666621039"))) {
+                event.reply("You are not an expansion senate member ! Can't do that >.<").withEphemeral(true).subscribe();
+                return;
+            }
+        }
         ServerConfig serverConfig = DatabaseHandler.getServer(event.getInteraction().getGuildId().get());
         if (serverConfig == null) {
             event.reply("No server config found, please first add a configuration").withEphemeral(true).block();

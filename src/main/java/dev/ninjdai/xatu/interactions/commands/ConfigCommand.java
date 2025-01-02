@@ -84,8 +84,8 @@ public class ConfigCommand implements Command {
             }
             List<Role> roles = event.getInteraction().getMember().get().getRoles().collectList().block();
             if (event.getInteraction().getMember().isEmpty() || roles == null || roles.stream().noneMatch(role -> role.getId().asString().equals("1077007974666621039"))) {
-                //event.reply("You are not an expansion senate member ! Can't do that >.<").withEphemeral(true).subscribe();
-                //return;
+                event.reply("You are not an expansion senate member ! Can't do that >.<").withEphemeral(true).subscribe();
+                return;
             }
         }
 

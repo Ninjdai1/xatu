@@ -6,6 +6,7 @@ import dev.ninjdai.xatu.data.Semver;
 import dev.ninjdai.xatu.data.ServerMetadata;
 import discord4j.core.event.domain.interaction.ApplicationCommandInteractionEvent;
 import discord4j.core.object.command.ApplicationCommandInteractionOption;
+import discord4j.core.spec.InteractionApplicationCommandCallbackReplyMono;
 import discord4j.discordjson.json.ApplicationCommandOptionData;
 import discord4j.discordjson.json.ApplicationCommandRequest;
 
@@ -54,6 +55,7 @@ public class ReleaseCommand implements Command {
             reply += "> * Big features will not be merged after <t:%d:f>\n".formatted(metadata.minor_release_timestamp - Utils.DAY_LENGTH_IN_SECONDS * 30);
             reply += "> * Non-bugfixes will not be merged after <t:%d:f>\n".formatted(metadata.minor_release_timestamp - Utils.DAY_LENGTH_IN_SECONDS * 14);
         }
-        event.reply(reply).withEphemeral(ephemeralOption.isPresent() && ephemeralOption.get().getValue().get().asBoolean()).block();
+        InteractionApplicationCommandCallbackReplyMono replyMono = event.reply(reply);
+        ephemeralOption.ifPresentOrElse(option -> replyMono.withEphemeral(option.getValue().get().asBoolean()).block(), () -> replyMono.withEphemeral(true).block());
     }
 }

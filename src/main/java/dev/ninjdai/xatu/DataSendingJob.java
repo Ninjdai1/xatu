@@ -23,7 +23,7 @@ public class DataSendingJob implements Job {
                 .addComponent(ActionRow.of(detailsBtn))
                 .build();
             channel.createMessage(message.asRequest()).subscribe();
-            /*if (serverConfig.second_channel_id != null) */Main.DISCORD_CLIENT.getChannelById(serverConfig.second_channel_id).createMessage(message.asRequest()).subscribe();
+            if (serverConfig.second_channel_id != null) Main.DISCORD_CLIENT.getChannelById(serverConfig.second_channel_id).createMessage(message.asRequest()).subscribe();
             DatabaseHandler.registerDetails(data.repo(), data.timestamp(), data.details());
         }
     }

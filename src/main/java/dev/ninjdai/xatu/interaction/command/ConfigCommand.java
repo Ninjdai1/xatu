@@ -1,5 +1,6 @@
 package dev.ninjdai.xatu.interaction.command;
 
+import com.google.auto.service.AutoService;
 import dev.ninjdai.xatu.manager.DatabaseHandler;
 import dev.ninjdai.xatu.data.ServerConfig;
 import dev.ninjdai.xatu.data.ServerMetadata;
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
+@AutoService(Command.class)
 public class ConfigCommand implements Command {
     @Override
     public ApplicationCommandRequest getCommand() {

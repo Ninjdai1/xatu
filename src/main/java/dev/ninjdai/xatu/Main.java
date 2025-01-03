@@ -2,7 +2,10 @@ package dev.ninjdai.xatu;
 
 import dev.ninjdai.xatu.data.Details;
 import dev.ninjdai.xatu.data.ServerConfig;
-import discord4j.common.util.Snowflake;
+import dev.ninjdai.xatu.manager.DatabaseHandler;
+import dev.ninjdai.xatu.manager.GithubHandler;
+import dev.ninjdai.xatu.manager.InteractionHandler;
+import dev.ninjdai.xatu.manager.SchedulerManager;
 import discord4j.core.DiscordClient;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.interaction.ApplicationCommandInteractionEvent;
@@ -13,7 +16,6 @@ import discord4j.core.object.entity.User;
 import discord4j.core.spec.EmbedCreateSpec;
 import discord4j.core.spec.InteractionApplicationCommandCallbackSpec;
 import discord4j.rest.util.Color;
-import org.quartz.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
@@ -21,12 +23,9 @@ import reactor.core.publisher.Mono;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class Main {
-    public static Map<Snowflake, ServerConfig> SERVER_CONFIGS;
     public static DiscordClient DISCORD_CLIENT;
     public static Logger LOGGER = LoggerFactory.getLogger("Xatu");
 
@@ -38,11 +37,10 @@ public class Main {
 
         {
             List<ServerConfig> serverConfigList = DatabaseHandler.getServers();
-            SERVER_CONFIGS = new HashMap<>(serverConfigList.size());
             for (ServerConfig serverConfig : serverConfigList) {
                 SchedulerManager.addServerJob(serverConfig);
             }
-            LOGGER.info("{} servers loaded", SERVER_CONFIGS.size());
+            LOGGER.info("{} servers loaded", serverConfigList.size());
         }
 
         Mono<Void> login = DISCORD_CLIENT.withGateway((GatewayDiscordClient gateway) -> {

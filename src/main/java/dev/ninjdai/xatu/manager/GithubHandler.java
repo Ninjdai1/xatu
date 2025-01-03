@@ -1,5 +1,7 @@
-package dev.ninjdai.xatu;
+package dev.ninjdai.xatu.manager;
 
+import dev.ninjdai.xatu.Main;
+import dev.ninjdai.xatu.Utils;
 import dev.ninjdai.xatu.data.Details;
 import dev.ninjdai.xatu.data.RepoData;
 import dev.ninjdai.xatu.data.ServerConfig;

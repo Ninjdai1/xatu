@@ -1,11 +1,11 @@
-package dev.ninjdai.xatu;
+package dev.ninjdai.xatu.manager;
 
-import dev.ninjdai.xatu.interactions.commands.Command;
-import dev.ninjdai.xatu.interactions.commands.ConfigCommand;
-import dev.ninjdai.xatu.interactions.commands.ReleaseCommand;
-import dev.ninjdai.xatu.interactions.commands.TriggerCommand;
-import dev.ninjdai.xatu.interactions.modals.ConfigModal;
-import dev.ninjdai.xatu.interactions.modals.Modal;
+import dev.ninjdai.xatu.Main;
+import dev.ninjdai.xatu.interaction.command.Command;
+import dev.ninjdai.xatu.interaction.command.ConfigCommand;
+import dev.ninjdai.xatu.interaction.command.ReleaseCommand;
+import dev.ninjdai.xatu.interaction.command.TriggerCommand;
+import dev.ninjdai.xatu.interaction.modal.Modal;
 import discord4j.core.event.domain.interaction.ApplicationCommandInteractionEvent;
 import discord4j.core.event.domain.interaction.ModalSubmitInteractionEvent;
 

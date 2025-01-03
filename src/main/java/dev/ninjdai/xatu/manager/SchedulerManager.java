@@ -1,5 +1,7 @@
-package dev.ninjdai.xatu;
+package dev.ninjdai.xatu.manager;
 
+import dev.ninjdai.xatu.DataSendingJob;
+import dev.ninjdai.xatu.Main;
 import dev.ninjdai.xatu.data.ServerConfig;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
@@ -26,7 +28,6 @@ public class SchedulerManager {
     }
 
     public static void addServerJob(ServerConfig serverConfig) {
-        Main.SERVER_CONFIGS.put(serverConfig.server_id, serverConfig);
         Trigger trigger = TriggerBuilder.newTrigger()
                 .withIdentity("trigger-" + serverConfig.server_id.asString() + "-" + serverConfig.repo_name, "fetch-schedules")
                 .withSchedule(CronScheduleBuilder

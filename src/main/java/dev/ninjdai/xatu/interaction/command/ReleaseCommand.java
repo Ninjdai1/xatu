@@ -1,6 +1,6 @@
-package dev.ninjdai.xatu.interactions.commands;
+package dev.ninjdai.xatu.interaction.command;
 
-import dev.ninjdai.xatu.DatabaseHandler;
+import dev.ninjdai.xatu.manager.DatabaseHandler;
 import dev.ninjdai.xatu.Utils;
 import dev.ninjdai.xatu.data.Semver;
 import dev.ninjdai.xatu.data.ServerMetadata;

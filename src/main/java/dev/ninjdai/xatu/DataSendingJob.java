@@ -2,6 +2,8 @@ package dev.ninjdai.xatu;
 
 import dev.ninjdai.xatu.data.RepoData;
 import dev.ninjdai.xatu.data.ServerConfig;
+import dev.ninjdai.xatu.manager.DatabaseHandler;
+import dev.ninjdai.xatu.manager.GithubHandler;
 import discord4j.core.object.component.ActionRow;
 import discord4j.core.object.component.Button;
 import discord4j.core.spec.MessageCreateSpec;

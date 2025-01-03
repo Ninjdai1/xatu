@@ -1,6 +1,6 @@
-package dev.ninjdai.xatu.interactions.modals;
+package dev.ninjdai.xatu.interaction.modal;
 
-import dev.ninjdai.xatu.DatabaseHandler;
+import dev.ninjdai.xatu.manager.DatabaseHandler;
 import dev.ninjdai.xatu.data.ServerConfig;
 import discord4j.common.util.Snowflake;
 import discord4j.core.event.domain.interaction.ModalSubmitInteractionEvent;

@@ -1,4 +1,4 @@
-package dev.ninjdai.xatu.interactions.commands;
+package dev.ninjdai.xatu.interaction.command;
 
 import discord4j.core.event.domain.interaction.ApplicationCommandInteractionEvent;
 import discord4j.discordjson.json.ApplicationCommandRequest;

@@ -1,4 +1,4 @@
-package dev.ninjdai.xatu.interactions.modals;
+package dev.ninjdai.xatu.interaction.modal;
 
 import discord4j.core.event.domain.interaction.ModalSubmitInteractionEvent;
 

@@ -1,13 +1,12 @@
-package dev.ninjdai.xatu.interactions.commands;
+package dev.ninjdai.xatu.interaction.command;
 
-import dev.ninjdai.xatu.DatabaseHandler;
+import dev.ninjdai.xatu.manager.DatabaseHandler;
 import dev.ninjdai.xatu.Main;
-import dev.ninjdai.xatu.SchedulerManager;
+import dev.ninjdai.xatu.manager.SchedulerManager;
 import dev.ninjdai.xatu.data.ServerConfig;
 import discord4j.core.event.domain.interaction.ApplicationCommandInteractionEvent;
 import discord4j.core.object.entity.Role;
 import discord4j.discordjson.json.ApplicationCommandRequest;
-import discord4j.rest.util.Permission;
 import org.quartz.JobKey;
 import org.quartz.SchedulerException;
 

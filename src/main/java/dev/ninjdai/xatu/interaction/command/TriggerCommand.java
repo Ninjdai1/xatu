@@ -1,5 +1,6 @@
 package dev.ninjdai.xatu.interaction.command;
 
+import com.google.auto.service.AutoService;
 import dev.ninjdai.xatu.manager.DatabaseHandler;
 import dev.ninjdai.xatu.Main;
 import dev.ninjdai.xatu.manager.SchedulerManager;
@@ -12,6 +13,7 @@ import org.quartz.SchedulerException;
 
 import java.util.List;
 
+@AutoService(Command.class)
 public class TriggerCommand implements Command{
     @Override
     public ApplicationCommandRequest getCommand() {

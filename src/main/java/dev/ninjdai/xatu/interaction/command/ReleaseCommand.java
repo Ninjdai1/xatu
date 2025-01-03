@@ -1,5 +1,6 @@
 package dev.ninjdai.xatu.interaction.command;
 
+import com.google.auto.service.AutoService;
 import dev.ninjdai.xatu.manager.DatabaseHandler;
 import dev.ninjdai.xatu.Utils;
 import dev.ninjdai.xatu.data.Semver;
@@ -12,6 +13,7 @@ import discord4j.discordjson.json.ApplicationCommandRequest;
 
 import java.util.Optional;
 
+@AutoService(Command.class)
 public class ReleaseCommand implements Command {
     @Override
     public ApplicationCommandRequest getCommand() {

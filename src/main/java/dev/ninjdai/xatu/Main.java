@@ -2,19 +2,23 @@ package dev.ninjdai.xatu;
 
 import dev.ninjdai.xatu.data.Details;
 import dev.ninjdai.xatu.data.ServerConfig;
-import dev.ninjdai.xatu.manager.DatabaseHandler;
-import dev.ninjdai.xatu.manager.GithubHandler;
-import dev.ninjdai.xatu.manager.InteractionHandler;
-import dev.ninjdai.xatu.manager.SchedulerManager;
+import dev.ninjdai.xatu.manager.*;
 import discord4j.core.DiscordClient;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.interaction.ApplicationCommandInteractionEvent;
 import discord4j.core.event.domain.interaction.ComponentInteractionEvent;
 import discord4j.core.event.domain.interaction.ModalSubmitInteractionEvent;
 import discord4j.core.event.domain.lifecycle.ReadyEvent;
+import discord4j.core.event.domain.message.MessageCreateEvent;
+import discord4j.core.event.domain.message.MessageDeleteEvent;
+import discord4j.core.event.domain.message.MessageUpdateEvent;
 import discord4j.core.object.entity.User;
+import discord4j.core.object.presence.ClientActivity;
+import discord4j.core.object.presence.ClientPresence;
 import discord4j.core.spec.EmbedCreateSpec;
 import discord4j.core.spec.InteractionApplicationCommandCallbackSpec;
+import discord4j.gateway.intent.Intent;
+import discord4j.gateway.intent.IntentSet;
 import discord4j.rest.util.Color;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +28,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Random;
 
 public class Main {
     public static DiscordClient DISCORD_CLIENT;
@@ -43,7 +48,11 @@ public class Main {
             LOGGER.info("{} servers loaded", serverConfigList.size());
         }
 
-        Mono<Void> login = DISCORD_CLIENT.withGateway((GatewayDiscordClient gateway) -> {
+        Mono<Void> login = DISCORD_CLIENT
+                .gateway()
+                .setEnabledIntents(IntentSet.of(Intent.GUILD_MESSAGES))
+                .setInitialPresence(s -> ClientPresence.online(ClientActivity.custom("Foreseeing " + new Random().nextInt(0, 10000) + " years in the future")))
+                .withGateway((GatewayDiscordClient gateway) -> {
             Mono<Void> printOnLogin = gateway.on(ReadyEvent.class, event ->
                             Mono.fromRunnable(() -> {
                                 final User self = event.getSelf();
@@ -78,7 +87,26 @@ public class Main {
                 return Mono.empty();
             }).then();
 
-            return printOnLogin.and(handleComponentInteractions).and(handleCommandInteractions).and(handleModalInteractions);
+            Mono<Void> handleMessageCreate = gateway.on(MessageCreateEvent.class, event -> {
+                MessageManager.execute(event);
+                return Mono.empty();
+            }).then();
+            Mono<Void> handleMessageUpdate = gateway.on(MessageUpdateEvent.class, event -> {
+                MessageManager.execute(event);
+                return Mono.empty();
+            }).then();
+            Mono<Void> handleMessageDelete = gateway.on(MessageDeleteEvent.class, event -> {
+                MessageManager.execute(event);
+                return Mono.empty();
+            }).then();
+
+            return printOnLogin
+                    .and(handleComponentInteractions)
+                    .and(handleCommandInteractions)
+                    .and(handleModalInteractions)
+                    .and(handleMessageCreate)
+                    .and(handleMessageUpdate)
+                    .and(handleMessageDelete);
         });
 
         login.block();

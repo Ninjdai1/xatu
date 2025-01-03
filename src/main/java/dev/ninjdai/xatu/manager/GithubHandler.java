@@ -25,6 +25,14 @@ public class GithubHandler {
         }
     }
 
+    public static GHIssue getIssue(String repoName, int number) {
+        try {
+            return GITHUB.getRepository(repoName).getIssue(number);
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
     public static RepoData getRepoData(ServerConfig serverConfig) {
         if (GITHUB==null) return null;
         try {

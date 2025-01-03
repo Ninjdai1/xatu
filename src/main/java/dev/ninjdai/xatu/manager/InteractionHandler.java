@@ -2,15 +2,13 @@ package dev.ninjdai.xatu.manager;
 
 import dev.ninjdai.xatu.Main;
 import dev.ninjdai.xatu.interaction.command.Command;
-import dev.ninjdai.xatu.interaction.command.ConfigCommand;
-import dev.ninjdai.xatu.interaction.command.ReleaseCommand;
-import dev.ninjdai.xatu.interaction.command.TriggerCommand;
 import dev.ninjdai.xatu.interaction.modal.Modal;
 import discord4j.core.event.domain.interaction.ApplicationCommandInteractionEvent;
 import discord4j.core.event.domain.interaction.ModalSubmitInteractionEvent;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.ServiceLoader;
 
 public class InteractionHandler {
     private static final Map<String, Command> COMMANDS = new HashMap<>();
@@ -18,10 +16,11 @@ public class InteractionHandler {
     public static void init() {
         long applicationId = Main.DISCORD_CLIENT.getApplicationId().block();
 
-        COMMANDS.put("config", new ConfigCommand());
-        COMMANDS.put("release", new ReleaseCommand());
-        COMMANDS.put("trigger", new TriggerCommand());
-        //MODALS.put("config", new ConfigModal());
+        ServiceLoader<Command> commandServiceLoader = ServiceLoader.load(Command.class);
+        for (Command p : commandServiceLoader) {
+            COMMANDS.put(p.getCommand().name(), p);
+            p.getCommand();
+        }
 
         for (Command command: COMMANDS.values()) {
             Main.DISCORD_CLIENT.getApplicationService()

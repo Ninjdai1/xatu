@@ -100,7 +100,7 @@ public class GithubHandler {
                     .addField(
                             "STALES",
                             String.format("**[Pull Requests](https://github.com/rh-hideout/pokeemerald-expansion/pulls?q=is%%3Apr+is%%3Aopen+draft%%3Afalse+sort%%3Aupdated-asc)**%s%s%s",
-                                    renderStaleIssue(openPRList.getFirst()),
+                                    renderStaleIssue(openPRList.get(0)),
                                     renderStaleIssue(openPRList.get(1)),
                                     renderStaleIssue(openPRList.get(2))
                             ),
@@ -109,7 +109,7 @@ public class GithubHandler {
                     .addField(
                             "STALES",
                             String.format("**[Issues](https://github.com/rh-hideout/pokeemerald-expansion/issues?q=is%%3Aopen+sort%%3Aupdated-asc)**%s%s%s",
-                                    renderStaleIssue(openIssueList.getFirst()),
+                                    renderStaleIssue(openIssueList.get(0)),
                                     renderStaleIssue(openIssueList.get(1)),
                                     renderStaleIssue(openIssueList.get(2))
                             ),
@@ -118,7 +118,7 @@ public class GithubHandler {
                     .addField(
                             "LAST CREATED",
                             String.format("**[Pull Requests](https://github.com/rh-hideout/pokeemerald-expansion/pulls?q=is%%3Apr+is%%3Aopen+sort%%3Acreated-desc)**%s%s%s",
-                                    renderRecentIssue(recentPRList.getFirst()),
+                                    renderRecentIssue(recentPRList.get(0)),
                                     renderRecentIssue(recentPRList.get(1)),
                                     renderRecentIssue(recentPRList.get(2))
                             ),
@@ -127,7 +127,7 @@ public class GithubHandler {
                     .addField(
                             "LAST CREATED",
                             String.format("**[Issues](https://github.com/rh-hideout/pokeemerald-expansion/issues?q=is%%3Aissue+is%%3Aopen+sort%%3Acreated-desc)**%s%s%s",
-                                    renderRecentIssue(recentIssueList.getFirst()),
+                                    renderRecentIssue(recentIssueList.get(0)),
                                     renderRecentIssue(recentIssueList.get(1)),
                                     renderRecentIssue(recentIssueList.get(2))
                             ),

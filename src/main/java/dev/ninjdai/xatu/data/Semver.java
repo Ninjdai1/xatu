@@ -10,7 +10,7 @@ public class Semver {
 
     public Semver(String versionString) {
         List<Integer> versionsList = Arrays.stream(versionString.split("\\.")).map(Integer::parseInt).toList();
-        this.major = versionsList.getFirst();
+        this.major = versionsList.get(0);
         this.minor = versionsList.get(1);
         this.patch = versionsList.get(2);
     }

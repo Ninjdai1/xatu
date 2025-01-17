@@ -75,14 +75,14 @@ public class GithubHandler {
                     return 0;
                 }
             }).toList();
-            int readyForReviewPR = openPRList.stream().parallel().filter(pr -> {
+            List<GHPullRequest> readyForReviewPRList = openPRList.stream().parallel().filter(pr -> {
                 try {
                     return !pr.isDraft();
                 } catch (IOException e) {
                     return false;
                 }
-            }).collect(Collectors.toSet()).size();
-            int draftPR = openPRList.size() - readyForReviewPR;
+            }).toList();
+            int draftPR = openPRList.size() - readyForReviewPRList.size();
 
             Main.LOGGER.debug("Starting to create embed");
             EmbedCreateSpec embed = EmbedCreateSpec.builder()
@@ -94,15 +94,15 @@ public class GithubHandler {
                             "RAW STATS",
                             String.format("* [%d Issues](https://github.com/rh-hideout/pokeemerald-expansion/issues) ([%d Confirmed Bugs](https://github.com/rh-hideout/pokeemerald-expansion/issues?q=is%%3Aissue+is%%3Aopen+label%%3A\"status%%3A+confirmed\") / [%d Unconfirmed Bugs](https://github.com/rh-hideout/pokeemerald-expansion/issues?q=is%%3Aissue+is%%3Aopen+label%%3A\"status%%3A+unconfirmed\") / [%d Feature Requests](https://github.com/rh-hideout/pokeemerald-expansion/issues?q=is%%3Aissue+is%%3Aopen+label%%3Afeature-request)) \n* [%d Pull Requests](https://github.com/rh-hideout/pokeemerald-expansion/pulls?q=is%%3Apr+is%%3Aopen) ([%d Ready for Review](https://github.com/rh-hideout/pokeemerald-expansion/pulls?q=is%%3Apr+is%%3Aopen+draft%%3Afalse) / [%d Draft](https://github.com/rh-hideout/pokeemerald-expansion/pulls?q=is%%3Apr+is%%3Aopen+draft%%3Atrue))",
                                     openIssueList.size(), confirmedBugs, unconfirmedBugs, featureRequests,
-                                    openPRList.size(), readyForReviewPR, draftPR
+                                    openPRList.size(), readyForReviewPRList.size(), draftPR
                             ),
                             false)
                     .addField(
                             "STALES",
                             String.format("**[Pull Requests](https://github.com/rh-hideout/pokeemerald-expansion/pulls?q=is%%3Apr+is%%3Aopen+draft%%3Afalse+sort%%3Aupdated-asc)**%s%s%s",
-                                    renderStaleIssue(openPRList.get(0)),
-                                    renderStaleIssue(openPRList.get(1)),
-                                    renderStaleIssue(openPRList.get(2))
+                                    renderStaleIssue(readyForReviewPRList.get(0)),
+                                    renderStaleIssue(readyForReviewPRList.get(1)),
+                                    renderStaleIssue(readyForReviewPRList.get(2))
                             ),
                             false
                     )

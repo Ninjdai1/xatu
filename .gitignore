@@ -1,6 +1,8 @@
 *.db
-
 target/
+.idea/caches
+.idea/misc.xml
+
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/

@@ -5,6 +5,7 @@ import dev.ninjdai.xatu.data.ServerConfig;
 import dev.ninjdai.xatu.manager.*;
 import discord4j.core.DiscordClient;
 import discord4j.core.GatewayDiscordClient;
+import discord4j.core.event.domain.channel.TextChannelUpdateEvent;
 import discord4j.core.event.domain.interaction.ApplicationCommandInteractionEvent;
 import discord4j.core.event.domain.interaction.ComponentInteractionEvent;
 import discord4j.core.event.domain.interaction.ModalSubmitInteractionEvent;
@@ -50,7 +51,7 @@ public class Main {
 
         Mono<Void> login = DISCORD_CLIENT
                 .gateway()
-                .setEnabledIntents(IntentSet.of(Intent.GUILD_MESSAGES))
+                .setEnabledIntents(IntentSet.of(Intent.GUILD_MESSAGES, Intent.MESSAGE_CONTENT))
                 .setInitialPresence(s -> ClientPresence.online(ClientActivity.custom("Foreseeing " + new Random().nextInt(0, 10000) + " years in the future")))
                 .withGateway((GatewayDiscordClient gateway) -> {
             Mono<Void> printOnLogin = gateway.on(ReadyEvent.class, event ->

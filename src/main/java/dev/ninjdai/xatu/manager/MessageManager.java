@@ -46,6 +46,7 @@ public class MessageManager {
                 Message message = channel.createMessage(MessageCreateSpec.builder()
                         .components(replyButtons)
                         .messageReference(event.getMessage().getId())
+                        .allowedMentions(AllowedMentions.builder().build())
                         .build()).block();
                 if (message != null) MESSAGE_REPLY_MAP.put(event.getMessage().getId(), message.getId());
             }

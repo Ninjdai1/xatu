@@ -26,8 +26,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class MessageManager {
-    public static final Pattern BACK_QUOTE_CONTENT_REGEX = Pattern.compile("/`[^``]*`/g");
-    public static final Pattern FORMATTED_LINK_CONTENT_REGEX = Pattern.compile("/\\[(.*?)\\]\\(.*?\\)/g");
+    public static final Pattern BACK_QUOTE_CONTENT_REGEX = Pattern.compile("`[^``]*`/g");
+    public static final Pattern FORMATTED_LINK_CONTENT_REGEX = Pattern.compile("\\[(.*?)\\]\\(.*?\\)");
     public static final Pattern RHH_MATCHES_REGEX = Pattern.compile("(^|\\s)#\\d+");
     public static final Pattern PRET_MATCHES_REGEX = Pattern.compile("(^|\\s)pret#\\d+");
 

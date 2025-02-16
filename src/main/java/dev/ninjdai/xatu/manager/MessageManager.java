@@ -20,6 +20,7 @@ import discord4j.rest.entity.RestMessage;
 import discord4j.rest.util.AllowedMentions;
 import org.apache.commons.lang3.tuple.Pair;
 import org.kohsuke.github.GHIssue;
+import reactor.core.publisher.Mono;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -38,37 +39,39 @@ public class MessageManager {
 
     public static final Map<Snowflake, Snowflake> MESSAGE_REPLY_MAP = new HashMap<>();
 
-    public static void execute(MessageCreateEvent event) {
+    public static Mono<Void> execute(MessageCreateEvent event) {
         List<LayoutComponent> replyButtons = getMessageButtons(event.getMessage().getContent());
         if (!replyButtons.isEmpty()) {
             MessageChannel channel = event.getMessage().getChannel().block();
-            if (channel != null) {
-                Message message = channel.createMessage(MessageCreateSpec.builder()
-                        .components(replyButtons)
-                        .messageReference(event.getMessage().getId())
-                        .allowedMentions(AllowedMentions.builder().build())
-                        .build()).block();
-                if (message != null) MESSAGE_REPLY_MAP.put(event.getMessage().getId(), message.getId());
-            }
+            if (channel != null) return channel.createMessage(MessageCreateSpec.builder()
+                .components(replyButtons)
+                .messageReference(event.getMessage().getId())
+                .allowedMentions(AllowedMentions.builder().build())
+                .build()).doOnSuccess(msg -> {
+                    if (msg != null) MESSAGE_REPLY_MAP.put(event.getMessage().getId(), msg.getId());
+                }).then();
         }
+        return Mono.empty();
     }
 
-    public static void execute(MessageUpdateEvent event) {
-        if (!event.isContentChanged()) return;
+    public static Mono<?> execute(MessageUpdateEvent event) {
+        if (!event.isContentChanged()) return Mono.empty();
         Message message = event.getMessage().block();
-        if (message == null || !MESSAGE_REPLY_MAP.containsKey(event.getMessageId())) return;
+        if (message == null || !MESSAGE_REPLY_MAP.containsKey(event.getMessageId())) return Mono.empty();
         List<LayoutComponent> replyButtons = getMessageButtons(message.getContent());
         if (!replyButtons.isEmpty()) {
-            Main.DISCORD_CLIENT.getMessageById(message.getChannelId(), MESSAGE_REPLY_MAP.get(event.getMessageId()))
-                    .edit(MessageEditRequest.builder().components(getComponentsData(replyButtons)).build()).block();
+            return Main.DISCORD_CLIENT.getMessageById(message.getChannelId(), MESSAGE_REPLY_MAP.get(event.getMessageId()))
+                    .edit(MessageEditRequest.builder().components(getComponentsData(replyButtons)).build());
         }
+        return Mono.empty();
     }
 
-    public static void execute(MessageDeleteEvent event) {
+    public static Mono<Void> execute(MessageDeleteEvent event) {
         if (MESSAGE_REPLY_MAP.containsKey(event.getMessageId())) {
             Main.DISCORD_CLIENT.getMessageById(event.getChannelId(), MESSAGE_REPLY_MAP.get(event.getMessageId())).delete("OP removed the relevant message").block();
             MESSAGE_REPLY_MAP.remove(event.getMessageId());
         }
+        return Mono.empty();
     }
 
     private static List<ComponentData> getComponentsData(List<LayoutComponent> layoutComponents) {

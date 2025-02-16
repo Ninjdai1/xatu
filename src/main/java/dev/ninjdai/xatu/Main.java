@@ -5,7 +5,6 @@ import dev.ninjdai.xatu.data.ServerConfig;
 import dev.ninjdai.xatu.manager.*;
 import discord4j.core.DiscordClient;
 import discord4j.core.GatewayDiscordClient;
-import discord4j.core.event.domain.channel.TextChannelUpdateEvent;
 import discord4j.core.event.domain.interaction.ApplicationCommandInteractionEvent;
 import discord4j.core.event.domain.interaction.ComponentInteractionEvent;
 import discord4j.core.event.domain.interaction.ModalSubmitInteractionEvent;
@@ -23,6 +22,7 @@ import discord4j.gateway.intent.IntentSet;
 import discord4j.rest.util.Color;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import reactor.core.publisher.Hooks;
 import reactor.core.publisher.Mono;
 
 import java.time.Instant;
@@ -36,6 +36,8 @@ public class Main {
     public static Logger LOGGER = LoggerFactory.getLogger("Xatu");
 
     public static void main(String[] args) {
+        Hooks.onOperatorDebug();
+
         DISCORD_CLIENT = DiscordClient.create(System.getenv("DISCORD_TOKEN"));
         GithubHandler.init(System.getenv("GITHUB_TOKEN"));
         DatabaseHandler.init("jdbc:sqlite:%s/xatu.db".formatted(System.getenv("DB_DIR") != null ? System.getenv("DB_DIR") : "."));
@@ -79,27 +81,12 @@ public class Main {
                 return Mono.empty();
             }).then();
 
-            Mono<Void> handleCommandInteractions = gateway.on(ApplicationCommandInteractionEvent.class, event -> {
-                InteractionHandler.execute(event);
-                return Mono.empty();
-            }).then();
-            Mono<Void> handleModalInteractions = gateway.on(ModalSubmitInteractionEvent.class, event -> {
-                InteractionHandler.execute(event);
-                return Mono.empty();
-            }).then();
+            Mono<Void> handleCommandInteractions = gateway.on(ApplicationCommandInteractionEvent.class, InteractionHandler::execute).then();
+            Mono<Void> handleModalInteractions = gateway.on(ModalSubmitInteractionEvent.class, InteractionHandler::execute).then();
 
-            Mono<Void> handleMessageCreate = gateway.on(MessageCreateEvent.class, event -> {
-                MessageManager.execute(event);
-                return Mono.empty();
-            }).then();
-            Mono<Void> handleMessageUpdate = gateway.on(MessageUpdateEvent.class, event -> {
-                MessageManager.execute(event);
-                return Mono.empty();
-            }).then();
-            Mono<Void> handleMessageDelete = gateway.on(MessageDeleteEvent.class, event -> {
-                MessageManager.execute(event);
-                return Mono.empty();
-            }).then();
+            Mono<Void> handleMessageCreate = gateway.on(MessageCreateEvent.class, MessageManager::execute).then();
+            Mono<Void> handleMessageUpdate = gateway.on(MessageUpdateEvent.class, MessageManager::execute).then();
+            Mono<Void> handleMessageDelete = gateway.on(MessageDeleteEvent.class, MessageManager::execute).then();
 
             return printOnLogin
                     .and(handleComponentInteractions)

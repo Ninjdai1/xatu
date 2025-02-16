@@ -10,6 +10,7 @@ import discord4j.core.object.command.ApplicationCommandInteractionOption;
 import discord4j.core.spec.InteractionApplicationCommandCallbackReplyMono;
 import discord4j.discordjson.json.ApplicationCommandOptionData;
 import discord4j.discordjson.json.ApplicationCommandRequest;
+import reactor.core.publisher.Mono;
 
 import java.util.Optional;
 
@@ -30,19 +31,16 @@ public class ReleaseCommand implements Command {
     }
 
     @Override
-    public void execute(ApplicationCommandInteractionEvent event) {
+    public Mono<Void> execute(ApplicationCommandInteractionEvent event) {
         if (event.getInteraction().getGuildId().isEmpty()) {
-            event.reply("Command must be used in a guild").withEphemeral(true).subscribe();
-            return;
+            return event.reply("Command must be used in a guild").withEphemeral(true);
         }
         ServerMetadata metadata = DatabaseHandler.getServerMetadata(event.getInteraction().getGuildId().get());
         if (metadata == null) {
-            event.reply("No release data found for your server").withEphemeral(true).block();
-            return;
+            return event.reply("No release data found for your server").withEphemeral(true);
         }
         if (metadata.current_version == null) {
-            event.reply("Current version unknown, please contact a senate member").withEphemeral(true).block();
-            return;
+            return event.reply("Current version unknown, please contact a senate member").withEphemeral(true);
         }
 
         Optional<ApplicationCommandInteractionOption> ephemeralOption = event.getInteraction().getCommandInteraction().get().getOption("ephemeral");
@@ -58,6 +56,6 @@ public class ReleaseCommand implements Command {
             reply += "> * Non-bugfixes will not be merged after <t:%d:f>\n".formatted(metadata.minor_release_timestamp - Utils.DAY_LENGTH_IN_SECONDS * 14);
         }
         InteractionApplicationCommandCallbackReplyMono replyMono = event.reply(reply);
-        ephemeralOption.ifPresentOrElse(option -> replyMono.withEphemeral(option.getValue().get().asBoolean()).block(), () -> replyMono.withEphemeral(true).block());
+        return replyMono.withEphemeral(ephemeralOption.isEmpty() || ephemeralOption.get().getValue().get().asBoolean());
     }
 }

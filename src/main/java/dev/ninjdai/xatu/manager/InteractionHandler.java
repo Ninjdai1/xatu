@@ -5,6 +5,7 @@ import dev.ninjdai.xatu.interaction.command.Command;
 import dev.ninjdai.xatu.interaction.modal.Modal;
 import discord4j.core.event.domain.interaction.ApplicationCommandInteractionEvent;
 import discord4j.core.event.domain.interaction.ModalSubmitInteractionEvent;
+import reactor.core.publisher.Mono;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -29,19 +30,19 @@ public class InteractionHandler {
         }
     }
 
-    public static void execute(ApplicationCommandInteractionEvent event) {
+    public static Mono<Void> execute(ApplicationCommandInteractionEvent event) {
         if (COMMANDS.containsKey(event.getCommandName())) {
-            COMMANDS.get(event.getCommandName()).execute(event);
+            return COMMANDS.get(event.getCommandName()).execute(event);
         } else {
-            event.reply("Command not found, please contact the developers").withEphemeral(true).subscribe();
+            return event.reply("Command not found, please contact the developers").withEphemeral(true);
         }
     }
 
-    public static void execute(ModalSubmitInteractionEvent event) {
+    public static Mono<Void> execute(ModalSubmitInteractionEvent event) {
         if (MODALS.containsKey(event.getCustomId())) {
-            MODALS.get(event.getCustomId()).execute(event);
+            return MODALS.get(event.getCustomId()).execute(event);
         } else {
-            event.reply("Modal not found, please contact the developers").withEphemeral(true).subscribe();
+            return event.reply("Modal not found, please contact the developers").withEphemeral(true);
         }
     }
 }

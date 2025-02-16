@@ -9,6 +9,7 @@ import discord4j.discordjson.json.ApplicationCommandOptionChoiceData;
 import discord4j.discordjson.json.ApplicationCommandOptionData;
 import discord4j.discordjson.json.ApplicationCommandRequest;
 import org.apache.commons.lang3.tuple.Pair;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.Map;
@@ -49,7 +50,7 @@ public class IssueCommand implements Command {
     }
 
     @Override
-    public void execute(ApplicationCommandInteractionEvent event) {
+    public Mono<Void> execute(ApplicationCommandInteractionEvent event) {
         Pair<String, String> template = TEMPLATE_LINKS.get(event.getInteraction().getCommandInteraction().get().getOption("type").get().getValue().get().asString());
         String issueTitle = event.getInteraction().getCommandInteraction().get().getOption("title").get().getValue().get().asString();
         String issueURL = "https://github.com/rh-hideout/pokeemerald-expansion/issues/new?assignees=&labels="
@@ -61,9 +62,9 @@ public class IssueCommand implements Command {
                 + "&title="
                 + issueTitle.replaceAll(" ", "+");
 
-        event.reply(InteractionApplicationCommandCallbackSpec.builder()
+        return event.reply(InteractionApplicationCommandCallbackSpec.builder()
                 .content("To report your issue, click on the button below and fill out the issues form !")
                 .addComponent(ActionRow.of(Button.link(issueURL, issueTitle.length() > 80 ? issueTitle.substring(0, 77) + "..." : issueTitle)))
-                .build()).block();
+                .build());
     }
 }

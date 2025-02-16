@@ -9,6 +9,7 @@ import discord4j.core.object.command.ApplicationCommandInteractionOption;
 import discord4j.core.object.entity.Role;
 import discord4j.discordjson.json.ApplicationCommandOptionData;
 import discord4j.discordjson.json.ApplicationCommandRequest;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.Optional;
@@ -78,16 +79,14 @@ public class ConfigCommand implements Command {
     }
 
     @Override
-    public void execute(ApplicationCommandInteractionEvent event) {
+    public Mono<Void> execute(ApplicationCommandInteractionEvent event) {
         {
             if (event.getInteraction().getGuildId().isEmpty()) {
-                event.reply("Command must be used in a guild").withEphemeral(true).subscribe();
-                return;
+                return event.reply("Command must be used in a guild").withEphemeral(true);
             }
             List<Role> roles = event.getInteraction().getMember().get().getRoles().collectList().block();
             if (event.getInteraction().getMember().isEmpty() || roles == null || roles.stream().noneMatch(role -> role.getId().asString().equals("1077007974666621039"))) {
-                event.reply("You are not an expansion senate member ! Can't do that >.<").withEphemeral(true).subscribe();
-                return;
+                return event.reply("You are not an expansion senate member ! Can't do that >.<").withEphemeral(true);
             }
         }
 
@@ -99,8 +98,7 @@ public class ConfigCommand implements Command {
             config.repo_name = setupOption.get().getOption("repository").get().getValue().get().asString();
             long fetch_time = setupOption.get().getOption("fetch_time").get().getValue().get().asLong();
             if (fetch_time < 0 || fetch_time > 24) {
-                event.reply("Fetch time must be between 0 and 24 ! %d is invalid".formatted(fetch_time)).block();
-                return;
+                return event.reply("Fetch time must be between 0 and 24 ! %d is invalid".formatted(fetch_time));
             }
             config.fetch_cron = (int) fetch_time;
             config.channel_id = setupOption.get().getOption("channel").get().getValue().get().asChannel().block().getId();
@@ -108,9 +106,8 @@ public class ConfigCommand implements Command {
                     config.second_channel_id = option.getValue().get().asChannel().block().getId());
 
             DatabaseHandler.addServer(config);
-            event.reply("Configuration complete !\nThe github repo `%s` will be fetched every day at %s:00 GMT and the recap will be sent in <#%d>".formatted(config.repo_name, config.fetch_cron, config.channel_id.asLong()))
-                    .withEphemeral(true)
-                    .block();
+            return event.reply("Configuration complete !\nThe github repo `%s` will be fetched every day at %s:00 GMT and the recap will be sent in <#%d>".formatted(config.repo_name, config.fetch_cron, config.channel_id.asLong()))
+                    .withEphemeral(true);
         } else if (schedulesOption.isPresent()) {
             ServerMetadata metadata = new ServerMetadata();
             metadata.server_id = event.getInteraction().getGuildId().get();
@@ -132,9 +129,10 @@ public class ConfigCommand implements Command {
             }
 
             DatabaseHandler.addServerMetadata(metadata);
-            event.reply(reply.get())
-                    .withEphemeral(true)
-                    .block();
+            return event.reply(reply.get())
+                    .withEphemeral(true);
+        } else {
+            return Mono.empty();
         }
     }
 }

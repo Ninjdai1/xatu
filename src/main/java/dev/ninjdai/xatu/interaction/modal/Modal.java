@@ -1,8 +1,9 @@
 package dev.ninjdai.xatu.interaction.modal;
 
 import discord4j.core.event.domain.interaction.ModalSubmitInteractionEvent;
+import reactor.core.publisher.Mono;
 
 public interface Modal {
     String getCustomId();
-    void execute(ModalSubmitInteractionEvent event);
+    Mono<Void> execute(ModalSubmitInteractionEvent event);
 }

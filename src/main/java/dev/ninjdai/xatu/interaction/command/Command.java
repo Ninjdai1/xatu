@@ -2,10 +2,11 @@ package dev.ninjdai.xatu.interaction.command;
 
 import discord4j.core.event.domain.interaction.ApplicationCommandInteractionEvent;
 import discord4j.discordjson.json.ApplicationCommandRequest;
+import reactor.core.publisher.Mono;
 
 public interface Command {
     ApplicationCommandRequest getCommand();
-    void execute(ApplicationCommandInteractionEvent event);
+    Mono<Void> execute(ApplicationCommandInteractionEvent event);
 
     int SUBCOMMAND_OPTION_TYPE = 1;
     int STRING_OPTION_TYPE = 3;

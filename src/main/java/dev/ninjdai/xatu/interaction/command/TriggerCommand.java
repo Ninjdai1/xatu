@@ -7,9 +7,11 @@ import dev.ninjdai.xatu.manager.SchedulerManager;
 import dev.ninjdai.xatu.data.ServerConfig;
 import discord4j.core.event.domain.interaction.ApplicationCommandInteractionEvent;
 import discord4j.core.object.entity.Role;
+import discord4j.core.spec.InteractionApplicationCommandCallbackReplyMono;
 import discord4j.discordjson.json.ApplicationCommandRequest;
 import org.quartz.JobKey;
 import org.quartz.SchedulerException;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 
@@ -24,28 +26,27 @@ public class TriggerCommand implements Command{
     }
 
     @Override
-    public void execute(ApplicationCommandInteractionEvent event) {
+    public Mono<Void> execute(ApplicationCommandInteractionEvent event) {
         {
             if (event.getInteraction().getGuildId().isEmpty() || event.getInteraction().getMember().isEmpty()) {
-                event.reply("Command must be used in a guild").withEphemeral(true).subscribe();
-                return;
+                return event.reply("Command must be used in a guild").withEphemeral(true);
             }
             List<Role> roles = event.getInteraction().getMember().get().getRoles().collectList().block();
             if (event.getInteraction().getMember().isEmpty() || roles == null || roles.stream().noneMatch(role -> role.getId().asString().equals("1077007974666621039"))) {
-                event.reply("You are not an expansion senate member ! Can't do that >.<").withEphemeral(true).subscribe();
-                return;
+                return event.reply("You are not an expansion senate member ! Can't do that >.<").withEphemeral(true);
             }
         }
         ServerConfig serverConfig = DatabaseHandler.getServer(event.getInteraction().getGuildId().get());
         if (serverConfig == null) {
-            event.reply("No server config found, please first add a configuration").withEphemeral(true).block();
-            return;
+            return event.reply("No server config found, please first add a configuration").withEphemeral(true);
         }
         event.reply("Launching a report fetch").withEphemeral(true).block();
-    try {
+
+        try {
             SchedulerManager.SCHEDULER.triggerJob(JobKey.jobKey("job:" + serverConfig.server_id.asString() + ":" + serverConfig.repo_name, "fetch-schedules"));
         } catch (SchedulerException e) {
             Main.LOGGER.error("Error during manual job trigger", e);
         }
+        return Mono.empty();
     }
 }

@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class GithubHandler {
@@ -45,7 +46,13 @@ public class GithubHandler {
             GHLabel featureRequestLabel = repository.getLabel("feature-request");
 
             Main.LOGGER.debug("Starting to fetch issues");
-            List<GHIssue> allList = repository.getIssues(GHIssueState.ALL);
+            List<GHIssue> allList = repository.getIssues(GHIssueState.ALL).stream().filter(issue -> {
+                try {
+                    return !Objects.equals(issue.getUser().getType(), "Bot");
+                } catch (IOException e) {
+                    return true;
+                }
+            }).toList();
             Main.LOGGER.debug("Starting to filter issues");
             List<GHIssue> openIssueList = allList.stream().filter(issue -> !issue.isPullRequest() && issue.getState()==GHIssueState.OPEN).sorted((issue, t1) -> {
                 try {
@@ -139,32 +146,34 @@ public class GithubHandler {
 
             Details details = new Details();
             for (GHIssue issue: allList) {
+                var createdAt = issue.getCreatedAt().getTime()/1000;
+                var closedAt = issue.getClosedAt().getTime()/1000;
                 if (issue.isPullRequest()){
-                    if ((issue.getCreatedAt().getTime()/1000) > timestamp - Utils.Durations.DAY.duration) details.opened_pr_1++;
-                    if ((issue.getCreatedAt().getTime()/1000) > timestamp - Utils.Durations.WEEK.duration) details.opened_pr_7++;
-                    if ((issue.getCreatedAt().getTime()/1000) > timestamp - Utils.Durations.MONTH.duration) details.opened_pr_30++;
-                    if ((issue.getCreatedAt().getTime()/1000) > timestamp - Utils.Durations.YEAR.duration) details.opened_pr_365++;
+                    if (createdAt > timestamp - Utils.Durations.DAY.duration) details.opened_pr_1++;
+                    if (createdAt > timestamp - Utils.Durations.WEEK.duration) details.opened_pr_7++;
+                    if (createdAt > timestamp - Utils.Durations.MONTH.duration) details.opened_pr_30++;
+                    if (createdAt > timestamp - Utils.Durations.YEAR.duration) details.opened_pr_365++;
                     details.opened_pr_all++;
 
                     if (issue.getState() == GHIssueState.CLOSED) {
-                        if ((issue.getClosedAt().getTime()/1000) > timestamp - Utils.Durations.DAY.duration) details.merged_pr_1++;
-                        if ((issue.getClosedAt().getTime()/1000) > timestamp - Utils.Durations.WEEK.duration) details.merged_pr_7++;
-                        if ((issue.getClosedAt().getTime()/1000) > timestamp - Utils.Durations.MONTH.duration) details.merged_pr_30++;
-                        if ((issue.getClosedAt().getTime()/1000) > timestamp - Utils.Durations.YEAR.duration) details.merged_pr_365++;
+                        if (closedAt > timestamp - Utils.Durations.DAY.duration) details.merged_pr_1++;
+                        if (closedAt > timestamp - Utils.Durations.WEEK.duration) details.merged_pr_7++;
+                        if (closedAt > timestamp - Utils.Durations.MONTH.duration) details.merged_pr_30++;
+                        if (closedAt > timestamp - Utils.Durations.YEAR.duration) details.merged_pr_365++;
                         details.merged_pr_all++;
                     }
                 } else {
-                    if ((issue.getCreatedAt().getTime()/1000) > timestamp - Utils.Durations.DAY.duration) details.opened_issue_1++;
-                    if ((issue.getCreatedAt().getTime()/1000) > timestamp - Utils.Durations.WEEK.duration) details.opened_issue_7++;
-                    if ((issue.getCreatedAt().getTime()/1000) > timestamp - Utils.Durations.MONTH.duration) details.opened_issue_30++;
-                    if ((issue.getCreatedAt().getTime()/1000) > timestamp - Utils.Durations.YEAR.duration) details.opened_issue_365++;
+                    if (createdAt > timestamp - Utils.Durations.DAY.duration) details.opened_issue_1++;
+                    if (createdAt > timestamp - Utils.Durations.WEEK.duration) details.opened_issue_7++;
+                    if (createdAt > timestamp - Utils.Durations.MONTH.duration) details.opened_issue_30++;
+                    if (createdAt > timestamp - Utils.Durations.YEAR.duration) details.opened_issue_365++;
                     details.opened_issue_all++;
 
                     if (issue.getState() == GHIssueState.CLOSED) {
-                        if ((issue.getClosedAt().getTime()/1000) > timestamp - Utils.Durations.DAY.duration) details.closed_issue_1++;
-                        if ((issue.getClosedAt().getTime()/1000) > timestamp - Utils.Durations.WEEK.duration) details.closed_issue_7++;
-                        if ((issue.getClosedAt().getTime()/1000) > timestamp - Utils.Durations.MONTH.duration) details.closed_issue_30++;
-                        if ((issue.getClosedAt().getTime()/1000) > timestamp - Utils.Durations.YEAR.duration) details.closed_issue_365++;
+                        if (closedAt > timestamp - Utils.Durations.DAY.duration) details.closed_issue_1++;
+                        if (closedAt > timestamp - Utils.Durations.WEEK.duration) details.closed_issue_7++;
+                        if (closedAt > timestamp - Utils.Durations.MONTH.duration) details.closed_issue_30++;
+                        if (closedAt > timestamp - Utils.Durations.YEAR.duration) details.closed_issue_365++;
                         details.closed_issue_all++;
                     }
                 }

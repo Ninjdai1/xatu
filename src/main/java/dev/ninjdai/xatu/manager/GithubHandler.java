@@ -46,13 +46,13 @@ public class GithubHandler {
             GHLabel featureRequestLabel = repository.getLabel("feature-request");
 
             Main.LOGGER.debug("Starting to fetch issues");
-            List<GHIssue> allList = repository.getIssues(GHIssueState.ALL).stream().filter(issue -> {
+            List<GHIssue> allList = repository.getIssues(GHIssueState.ALL)/*.stream().filter(issue -> {
                 try {
                     return !Objects.equals(issue.getUser().getType(), "Bot");
                 } catch (IOException e) {
                     return true;
                 }
-            }).toList();
+            }).toList()*/;
             Main.LOGGER.debug("Starting to filter issues");
             List<GHIssue> openIssueList = allList.stream().filter(issue -> !issue.isPullRequest() && issue.getState()==GHIssueState.OPEN).sorted((issue, t1) -> {
                 try {

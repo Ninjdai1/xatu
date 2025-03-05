@@ -146,8 +146,9 @@ public class GithubHandler {
 
             Details details = new Details();
             for (GHIssue issue: allList) {
-                var createdAt = issue.getCreatedAt().getTime()/1000;
-                var closedAt = issue.getClosedAt().getTime()/1000;
+                if (issue.getClosedAt() == null || issue.getCreatedAt() == null) continue;
+                long createdAt = issue.getCreatedAt().getTime()/1000;
+                long closedAt = issue.getClosedAt().getTime()/1000;
                 if (issue.isPullRequest()){
                     if (createdAt > timestamp - Utils.Durations.DAY.duration) details.opened_pr_1++;
                     if (createdAt > timestamp - Utils.Durations.WEEK.duration) details.opened_pr_7++;

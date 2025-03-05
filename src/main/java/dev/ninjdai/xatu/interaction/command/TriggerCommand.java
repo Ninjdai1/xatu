@@ -32,7 +32,7 @@ public class TriggerCommand implements Command{
                 return event.reply("Command must be used in a guild").withEphemeral(true);
             }
             List<Role> roles = event.getInteraction().getMember().get().getRoles().collectList().block();
-            if (event.getInteraction().getMember().isEmpty() || roles == null || roles.stream().noneMatch(role -> role.getId().asString().equals("1077007974666621039"))) {
+            if (event.getInteraction().getMember().isEmpty() || roles == null || roles.stream().noneMatch(role -> role.getId().asString().equals("1077007974666621039")) || !event.getInteraction().getUser().getId().asString().equals("697438073646088194")) {
                 return event.reply("You are not an expansion senate member ! Can't do that >.<").withEphemeral(true);
             }
         }

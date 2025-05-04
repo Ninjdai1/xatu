@@ -8,15 +8,11 @@ import discord4j.core.event.domain.message.MessageUpdateEvent;
 import discord4j.core.object.component.ActionRow;
 import discord4j.core.object.component.Button;
 import discord4j.core.object.component.LayoutComponent;
+import discord4j.core.object.emoji.Emoji;
 import discord4j.core.object.entity.Message;
-import discord4j.core.object.entity.channel.Channel;
 import discord4j.core.object.entity.channel.MessageChannel;
-import discord4j.core.object.reaction.ReactionEmoji;
 import discord4j.core.spec.MessageCreateSpec;
-import discord4j.core.spec.MessageEditSpec;
 import discord4j.discordjson.json.*;
-import discord4j.discordjson.possible.Possible;
-import discord4j.rest.entity.RestMessage;
 import discord4j.rest.util.AllowedMentions;
 import org.apache.commons.lang3.tuple.Pair;
 import org.kohsuke.github.GHIssue;
@@ -32,10 +28,10 @@ public class MessageManager {
     public static final Pattern RHH_MATCHES_REGEX = Pattern.compile("(^|\\s)#\\d+");
     public static final Pattern PRET_MATCHES_REGEX = Pattern.compile("(^|\\s)pret#\\d+");
 
-    public static final ReactionEmoji EMOJI_ISSUE_CLOSED = ReactionEmoji.of(1333157204429377566L, "issue_closed", false);
-    public static final ReactionEmoji EMOJI_ISSUE_OPEN = ReactionEmoji.of(1333157206740439051L, "issue_open", false);
-    public static final ReactionEmoji EMOJI_PR_MERGED = ReactionEmoji.of(1333157400399843339L, "pr_merged", false);
-    public static final ReactionEmoji EMOJI_PR_OPEN = ReactionEmoji.of(1333157402954170369L, "pr_open", false);
+    public static final Emoji EMOJI_ISSUE_CLOSED = Emoji.of(1333157204429377566L, "issue_closed", false);
+    public static final Emoji EMOJI_ISSUE_OPEN = Emoji.of(1333157206740439051L, "issue_open", false);
+    public static final Emoji EMOJI_PR_MERGED = Emoji.of(1333157400399843339L, "pr_merged", false);
+    public static final Emoji EMOJI_PR_OPEN = Emoji.of(1333157402954170369L, "pr_open", false);
 
     public static final Map<Snowflake, Snowflake> MESSAGE_REPLY_MAP = new HashMap<>();
 
@@ -45,7 +41,7 @@ public class MessageManager {
             MessageChannel channel = event.getMessage().getChannel().block();
             if (channel != null) return channel.createMessage(MessageCreateSpec.builder()
                 .components(replyButtons)
-                .messageReference(event.getMessage().getId())
+                .messageReference(event.getMessage().getMessageReference().get().getData())
                 .allowedMentions(AllowedMentions.builder().build())
                 .build()).doOnSuccess(msg -> {
                     if (msg != null) MESSAGE_REPLY_MAP.put(event.getMessage().getId(), msg.getId());
@@ -117,7 +113,7 @@ public class MessageManager {
         return Arrays.stream(replyButtons).toList();
     }
 
-    public static ReactionEmoji getIssueEmoji(GHIssue issue) {
+    public static Emoji getIssueEmoji(GHIssue issue) {
         if (issue.isPullRequest()) {
             if (issue.getClosedAt() != null) return EMOJI_PR_MERGED;
             else return EMOJI_PR_OPEN;

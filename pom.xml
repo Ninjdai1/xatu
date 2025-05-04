@@ -6,7 +6,7 @@
 
     <groupId>dev.ninjdai.xatu</groupId>
     <artifactId>xatu</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.1-SNAPSHOT</version>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
@@ -19,7 +19,7 @@
         <dependency>
             <groupId>com.discord4j</groupId>
             <artifactId>discord4j-core</artifactId>
-            <version>3.3.0-RC1</version>
+            <version>3.3.0-RC2</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>

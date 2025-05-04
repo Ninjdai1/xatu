@@ -19,13 +19,8 @@ public class DataSendingJob implements Job {
         RestChannel channel = Main.DISCORD_CLIENT.getChannelById(serverConfig.channel_id);
 
         if (data != null) {
-            Button detailsBtn = Button.primary("details:%s:%d".formatted(data.repo(), data.timestamp()), "Show details");
-            MessageCreateSpec message = MessageCreateSpec.builder()
-                .addEmbed(data.embed())
-                .addComponent(ActionRow.of(detailsBtn))
-                .build();
-            channel.createMessage(message.asRequest()).subscribe();
-            if (serverConfig.second_channel_id != null) Main.DISCORD_CLIENT.getChannelById(serverConfig.second_channel_id).createMessage(message.asRequest()).subscribe();
+            channel.createMessage(data.embed().asRequest()).subscribe();
+            if (serverConfig.second_channel_id != null) Main.DISCORD_CLIENT.getChannelById(serverConfig.second_channel_id).createMessage(data.embed().asRequest()).subscribe();
             DatabaseHandler.registerDetails(data.repo(), data.timestamp(), data.details());
         }
     }

@@ -5,11 +5,15 @@ import dev.ninjdai.xatu.Utils;
 import dev.ninjdai.xatu.data.Details;
 import dev.ninjdai.xatu.data.RepoData;
 import dev.ninjdai.xatu.data.ServerConfig;
+import discord4j.core.object.component.*;
+import discord4j.core.object.entity.Message;
 import discord4j.core.spec.EmbedCreateSpec;
+import discord4j.core.spec.MessageCreateSpec;
 import discord4j.rest.util.Color;
 import org.kohsuke.github.*;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
@@ -92,57 +96,48 @@ public class GithubHandler {
             int draftPR = openPRList.size() - readyForReviewPRList.size();
 
             Main.LOGGER.debug("Starting to create embed");
-            EmbedCreateSpec embed = EmbedCreateSpec.builder()
-                    .color(Color.of(0, 176, 244))
-                    .title("Expansion Issue Report")
-                    .url("https://github.com/rh-hideout/pokeemerald-expansion/issues?q=is%3Aopen+")
-                    .author("Xatu", "https://github.com/Ninjdai1/xatu", "https://raw.githubusercontent.com/PMDCollab/SpriteCollab/master/portrait/0178/Inspired.png")
-                    .addField(
-                            "RAW STATS",
-                            String.format("* [%d Issues](https://github.com/rh-hideout/pokeemerald-expansion/issues) ([%d Confirmed Bugs](https://github.com/rh-hideout/pokeemerald-expansion/issues?q=is%%3Aissue+is%%3Aopen+label%%3A\"status%%3A+confirmed\") / [%d Unconfirmed Bugs](https://github.com/rh-hideout/pokeemerald-expansion/issues?q=is%%3Aissue+is%%3Aopen+label%%3A\"status%%3A+unconfirmed\") / [%d Feature Requests](https://github.com/rh-hideout/pokeemerald-expansion/issues?q=is%%3Aissue+is%%3Aopen+label%%3Afeature-request)) \n* [%d Pull Requests](https://github.com/rh-hideout/pokeemerald-expansion/pulls?q=is%%3Apr+is%%3Aopen) ([%d Ready for Review](https://github.com/rh-hideout/pokeemerald-expansion/pulls?q=is%%3Apr+is%%3Aopen+draft%%3Afalse) / [%d Draft](https://github.com/rh-hideout/pokeemerald-expansion/pulls?q=is%%3Apr+is%%3Aopen+draft%%3Atrue))",
-                                    openIssueList.size(), confirmedBugs, unconfirmedBugs, featureRequests,
-                                    openPRList.size(), readyForReviewPRList.size(), draftPR
-                            ),
-                            false)
-                    .addField(
-                            "STALES",
-                            String.format("**[Pull Requests](https://github.com/rh-hideout/pokeemerald-expansion/pulls?q=is%%3Apr+is%%3Aopen+draft%%3Afalse+sort%%3Aupdated-asc)**%s%s%s",
-                                    renderStaleIssue(readyForReviewPRList.get(0)),
-                                    renderStaleIssue(readyForReviewPRList.get(1)),
-                                    renderStaleIssue(readyForReviewPRList.get(2))
-                            ),
-                            false
-                    )
-                    .addField(
-                            "STALES",
-                            String.format("**[Issues](https://github.com/rh-hideout/pokeemerald-expansion/issues?q=is%%3Aopen+sort%%3Aupdated-asc)**%s%s%s",
-                                    renderStaleIssue(openIssueList.get(0)),
-                                    renderStaleIssue(openIssueList.get(1)),
-                                    renderStaleIssue(openIssueList.get(2))
-                            ),
-                            true
-                    )
-                    .addField(
-                            "LAST CREATED",
-                            String.format("**[Pull Requests](https://github.com/rh-hideout/pokeemerald-expansion/pulls?q=is%%3Apr+is%%3Aopen+sort%%3Acreated-desc)**%s%s%s",
-                                    renderRecentIssue(recentPRList.get(0)),
-                                    renderRecentIssue(recentPRList.get(1)),
-                                    renderRecentIssue(recentPRList.get(2))
-                            ),
-                            false
-                    )
-                    .addField(
-                            "LAST CREATED",
-                            String.format("**[Issues](https://github.com/rh-hideout/pokeemerald-expansion/issues?q=is%%3Aissue+is%%3Aopen+sort%%3Acreated-desc)**%s%s%s",
-                                    renderRecentIssue(recentIssueList.get(0)),
-                                    renderRecentIssue(recentIssueList.get(1)),
-                                    renderRecentIssue(recentIssueList.get(2))
-                            ),
-                            false
-                    )
-                    .timestamp(Instant.now())
-                    .footer("Written with ❤️ by Ninjdai", "https://archives.bulbagarden.net/media/upload/e/eb/BT178.png")
-                    .build();
+            MessageCreateSpec messageCreateSpec = MessageCreateSpec.create()
+                    .withFlags(Message.Flag.IS_COMPONENTS_V2)
+                    .withComponents(
+                            Container.of(
+                                    Color.of(0, 176, 244),
+                                    Section.of(
+                                            Thumbnail.of(UnfurledMediaItem.of("https://raw.githubusercontent.com/PMDCollab/SpriteCollab/master/portrait/0178/Inspired.png")),
+                                            TextDisplay.of("## [Expansion Issue Report](https://github.com/rh-hideout/pokeemerald-expansion/issues?q=is%3Aopen)"),
+                                            TextDisplay.of("**RAW STATS**"),
+                                            TextDisplay.of(String.format("* [%d Issues](https://github.com/rh-hideout/pokeemerald-expansion/issues) ([%d Confirmed Bugs](https://github.com/rh-hideout/pokeemerald-expansion/issues?q=is%%3Aissue+is%%3Aopen+label%%3A\"status%%3A+confirmed\") / [%d Unconfirmed Bugs](https://github.com/rh-hideout/pokeemerald-expansion/issues?q=is%%3Aissue+is%%3Aopen+label%%3A\"status%%3A+unconfirmed\") / [%d Feature Requests](https://github.com/rh-hideout/pokeemerald-expansion/issues?q=is%%3Aissue+is%%3Aopen+label%%3Afeature-request)) \n* [%d Pull Requests](https://github.com/rh-hideout/pokeemerald-expansion/pulls?q=is%%3Apr+is%%3Aopen) ([%d Ready for Review](https://github.com/rh-hideout/pokeemerald-expansion/pulls?q=is%%3Apr+is%%3Aopen+draft%%3Afalse) / [%d Draft](https://github.com/rh-hideout/pokeemerald-expansion/pulls?q=is%%3Apr+is%%3Aopen+draft%%3Atrue))",
+                                                    openIssueList.size(), confirmedBugs, unconfirmedBugs, featureRequests,
+                                                    openPRList.size(), readyForReviewPRList.size(), draftPR
+                                            ))
+                                    ),
+                                    Separator.of(Separator.SpacingSize.SMALL),
+                                    TextDisplay.of("**STALES**"),
+                                    TextDisplay.of(String.format("**[Pull Requests](https://github.com/rh-hideout/pokeemerald-expansion/pulls?q=is%%3Apr+is%%3Aopen+draft%%3Afalse+sort%%3Aupdated-asc)**%s%s%s",
+                                            renderStaleIssue(readyForReviewPRList.get(0)),
+                                            renderStaleIssue(readyForReviewPRList.get(1)),
+                                            renderStaleIssue(readyForReviewPRList.get(2))
+                                    )),
+                                    TextDisplay.of(String.format("**[Issues](https://github.com/rh-hideout/pokeemerald-expansion/issues?q=is%%3Aopen+sort%%3Aupdated-asc)**%s%s%s",
+                                            renderStaleIssue(openIssueList.get(0)),
+                                            renderStaleIssue(openIssueList.get(1)),
+                                            renderStaleIssue(openIssueList.get(2))
+                                    )),
+                                    Separator.of(Separator.SpacingSize.SMALL),
+                                    TextDisplay.of("**LAST CREATED**"),
+                                    TextDisplay.of(String.format("**[Pull Requests](https://github.com/rh-hideout/pokeemerald-expansion/pulls?q=is%%3Apr+is%%3Aopen+sort%%3Acreated-desc)**%s%s%s",
+                                            renderRecentIssue(recentPRList.get(0)),
+                                            renderRecentIssue(recentPRList.get(1)),
+                                            renderRecentIssue(recentPRList.get(2))
+                                    )),
+                                    TextDisplay.of(String.format("**[Issues](https://github.com/rh-hideout/pokeemerald-expansion/issues?q=is%%3Aissue+is%%3Aopen+sort%%3Acreated-desc)**%s%s%s",
+                                            renderRecentIssue(recentIssueList.get(0)),
+                                            renderRecentIssue(recentIssueList.get(1)),
+                                            renderRecentIssue(recentIssueList.get(2))
+                                    )),
+                                    ActionRow.of(Button.primary("details:%s:%d".formatted(serverConfig.repo_name, timestamp), "Show details")),
+                                    TextDisplay.of(String.format("-# Written with ❤️ by Ninjdai • %s", new SimpleDateFormat("MM/dd/yy, K:m a").format(Date.from(Instant.now()))))
+                            )
+                    );
 
             Details details = new Details();
             for (GHIssue issue: allList) {
@@ -179,7 +174,7 @@ public class GithubHandler {
                     }
                 }
             }
-            return new RepoData(serverConfig.repo_name, timestamp, embed, details);
+            return new RepoData(serverConfig.repo_name, timestamp, messageCreateSpec, details);
         } catch (IOException e) {
             Main.LOGGER.error("Error while fetching repository data", e);
             return null;

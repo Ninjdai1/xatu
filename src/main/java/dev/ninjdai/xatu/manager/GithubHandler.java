@@ -102,7 +102,7 @@ public class GithubHandler {
                             Container.of(
                                     Color.of(0, 176, 244),
                                     Section.of(
-                                            Thumbnail.of(UnfurledMediaItem.of("https://raw.githubusercontent.com/PMDCollab/SpriteCollab/master/portrait/0178/Inspired.png")),
+                                            Thumbnail.of(UnfurledMediaItem.of("https://i.imgur.com/tyFU3UJ.png")),
                                             TextDisplay.of("## [Expansion Issue Report](https://github.com/rh-hideout/pokeemerald-expansion/issues?q=is%3Aopen)"),
                                             TextDisplay.of("**RAW STATS**"),
                                             TextDisplay.of(String.format("* [%d Issues](https://github.com/rh-hideout/pokeemerald-expansion/issues) ([%d Confirmed Bugs](https://github.com/rh-hideout/pokeemerald-expansion/issues?q=is%%3Aissue+is%%3Aopen+label%%3A\"status%%3A+confirmed\") / [%d Unconfirmed Bugs](https://github.com/rh-hideout/pokeemerald-expansion/issues?q=is%%3Aissue+is%%3Aopen+label%%3A\"status%%3A+unconfirmed\") / [%d Feature Requests](https://github.com/rh-hideout/pokeemerald-expansion/issues?q=is%%3Aissue+is%%3Aopen+label%%3Afeature-request)) \n* [%d Pull Requests](https://github.com/rh-hideout/pokeemerald-expansion/pulls?q=is%%3Apr+is%%3Aopen) ([%d Ready for Review](https://github.com/rh-hideout/pokeemerald-expansion/pulls?q=is%%3Apr+is%%3Aopen+draft%%3Afalse) / [%d Draft](https://github.com/rh-hideout/pokeemerald-expansion/pulls?q=is%%3Apr+is%%3Aopen+draft%%3Atrue))",

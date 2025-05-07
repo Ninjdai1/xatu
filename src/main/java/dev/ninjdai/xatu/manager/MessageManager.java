@@ -39,13 +39,13 @@ public class MessageManager {
         List<LayoutComponent> replyButtons = getMessageButtons(event.getMessage().getContent());
         if (!replyButtons.isEmpty()) {
             MessageChannel channel = event.getMessage().getChannel().block();
-            if (channel != null) return channel.createMessage(MessageCreateSpec.builder()
+            if (channel != null) channel.createMessage(MessageCreateSpec.builder()
                 .components(replyButtons)
-                .messageReference(event.getMessage().getMessageReference().get().getData())
+                .messageReference(MessageReferenceData.builder().messageId(event.getMessage().getId().asLong()).build())
                 .allowedMentions(AllowedMentions.builder().build())
                 .build()).doOnSuccess(msg -> {
                     if (msg != null) MESSAGE_REPLY_MAP.put(event.getMessage().getId(), msg.getId());
-                }).then();
+                }).subscribe();
         }
         return Mono.empty();
     }

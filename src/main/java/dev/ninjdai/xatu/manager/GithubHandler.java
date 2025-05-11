@@ -18,10 +18,14 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class GithubHandler {
     private static GitHub GITHUB;
+
+    public static final Pattern CONTRIBUTOR_CREDITS_PR = Pattern.compile("Add .* as a contributor");
+
     public static void init(String githubToken) {
         try {
             GITHUB = new GitHubBuilder().withOAuthToken(githubToken).build();
@@ -50,13 +54,11 @@ public class GithubHandler {
             GHLabel featureRequestLabel = repository.getLabel("feature-request");
 
             Main.LOGGER.debug("Starting to fetch issues");
-            List<GHIssue> allList = repository.getIssues(GHIssueState.ALL)/*.stream().filter(issue -> {
-                try {
-                    return !Objects.equals(issue.getUser().getType(), "Bot");
-                } catch (IOException e) {
-                    return true;
-                }
-            }).toList()*/;
+            List<GHIssue> allList = repository.getIssues(GHIssueState.ALL)
+                    .parallelStream()
+                    .filter(issue -> CONTRIBUTOR_CREDITS_PR.matcher(issue.getTitle()).matches())
+                    .toList();
+
             Main.LOGGER.debug("Starting to filter issues");
             List<GHIssue> openIssueList = allList.stream().filter(issue -> !issue.isPullRequest() && issue.getState()==GHIssueState.OPEN).sorted((issue, t1) -> {
                 try {
@@ -77,7 +79,10 @@ public class GithubHandler {
             int featureRequests = openIssueList.stream().filter(issue -> issue.getLabels().contains(featureRequestLabel)).toList().size();
 
             Main.LOGGER.debug("Starting to fetch PRs");
-            List<GHPullRequest> openPRList = repository.queryPullRequests().state(GHIssueState.OPEN).sort(GHPullRequestQueryBuilder.Sort.UPDATED).list().toList();
+            List<GHPullRequest> openPRList = repository.queryPullRequests().state(GHIssueState.OPEN).sort(GHPullRequestQueryBuilder.Sort.UPDATED).list().toList()
+                    .parallelStream()
+                    .filter(pr -> CONTRIBUTOR_CREDITS_PR.matcher(pr.getTitle()).matches())
+                    .toList();
             Main.LOGGER.debug("Starting to filter PRs");
             List<GHPullRequest> recentPRList = openPRList.stream().sorted((t1, pr) -> {
                 try {

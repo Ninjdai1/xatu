@@ -56,7 +56,7 @@ public class GithubHandler {
             Main.LOGGER.debug("Starting to fetch issues");
             List<GHIssue> allList = repository.getIssues(GHIssueState.ALL)
                     .parallelStream()
-                    .filter(issue -> CONTRIBUTOR_CREDITS_PR.matcher(issue.getTitle()).matches())
+                    .filter(issue -> !CONTRIBUTOR_CREDITS_PR.matcher(issue.getTitle()).matches())
                     .toList();
 
             Main.LOGGER.debug("Starting to filter issues");
@@ -81,7 +81,7 @@ public class GithubHandler {
             Main.LOGGER.debug("Starting to fetch PRs");
             List<GHPullRequest> openPRList = repository.queryPullRequests().state(GHIssueState.OPEN).sort(GHPullRequestQueryBuilder.Sort.UPDATED).list().toList()
                     .parallelStream()
-                    .filter(pr -> CONTRIBUTOR_CREDITS_PR.matcher(pr.getTitle()).matches())
+                    .filter(pr -> !CONTRIBUTOR_CREDITS_PR.matcher(pr.getTitle()).matches())
                     .toList();
             Main.LOGGER.debug("Starting to filter PRs");
             List<GHPullRequest> recentPRList = openPRList.stream().sorted((t1, pr) -> {

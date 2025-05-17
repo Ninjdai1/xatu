@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 public class GithubHandler {
     private static GitHub GITHUB;
 
-    public static final Pattern CONTRIBUTOR_CREDITS_PR = Pattern.compile("Add .* as a contributor.*");
+    public static final Pattern CONTRIBUTOR_CREDITS_PR = Pattern.compile("Add .* as a contributor.*", Pattern.CASE_INSENSITIVE);
 
     public static void init(String githubToken) {
         try {

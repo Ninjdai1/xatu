@@ -19,14 +19,15 @@ public class InteractionHandler {
 
         ServiceLoader<Command> commandServiceLoader = ServiceLoader.load(Command.class);
         for (Command p : commandServiceLoader) {
-            COMMANDS.put(p.getCommand().name(), p);
-            p.getCommand();
+            for (String name: p.getName()) COMMANDS.put(name, p);
+            p.getCommandBuilder();
         }
 
         for (Command command: COMMANDS.values()) {
-            Main.DISCORD_CLIENT.getApplicationService()
-                .createGlobalApplicationCommand(applicationId, command.getCommand())
-                .subscribe();
+            for (String alias: command.getName())
+                Main.DISCORD_CLIENT.getApplicationService()
+                    .createGlobalApplicationCommand(applicationId, command.getCommandBuilder().name(alias).build())
+                    .subscribe();
         }
     }
 

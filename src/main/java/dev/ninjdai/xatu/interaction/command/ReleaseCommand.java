@@ -10,6 +10,7 @@ import discord4j.core.object.command.ApplicationCommandInteractionOption;
 import discord4j.core.spec.InteractionApplicationCommandCallbackReplyMono;
 import discord4j.discordjson.json.ApplicationCommandOptionData;
 import discord4j.discordjson.json.ApplicationCommandRequest;
+import discord4j.discordjson.json.ImmutableApplicationCommandRequest;
 import reactor.core.publisher.Mono;
 
 import java.util.Optional;
@@ -17,17 +18,20 @@ import java.util.Optional;
 @AutoService(Command.class)
 public class ReleaseCommand implements Command {
     @Override
-    public ApplicationCommandRequest getCommand() {
+    public String[] getName() {
+        return new String[]{"release"};
+    }
+
+    @Override
+    public ImmutableApplicationCommandRequest.Builder getCommandBuilder() {
         return ApplicationCommandRequest.builder()
-                .name("release")
                 .description("Display the release schedules for this server")
                 .addOption(ApplicationCommandOptionData.builder()
                         .type(BOOLEAN_OPTION_TYPE)
                         .name("ephemeral")
                         .description("Only show the data to you")
                         .required(false)
-                        .build())
-                .build();
+                        .build());
     }
 
     @Override

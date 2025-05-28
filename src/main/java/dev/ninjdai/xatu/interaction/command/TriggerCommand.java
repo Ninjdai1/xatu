@@ -9,6 +9,7 @@ import discord4j.core.event.domain.interaction.ApplicationCommandInteractionEven
 import discord4j.core.object.entity.Role;
 import discord4j.core.spec.InteractionApplicationCommandCallbackReplyMono;
 import discord4j.discordjson.json.ApplicationCommandRequest;
+import discord4j.discordjson.json.ImmutableApplicationCommandRequest;
 import org.quartz.JobKey;
 import org.quartz.SchedulerException;
 import reactor.core.publisher.Mono;
@@ -18,11 +19,14 @@ import java.util.List;
 @AutoService(Command.class)
 public class TriggerCommand implements Command{
     @Override
-    public ApplicationCommandRequest getCommand() {
+    public String[] getName() {
+        return new String[]{"trigger"};
+    }
+
+    @Override
+    public ImmutableApplicationCommandRequest.Builder getCommandBuilder() {
         return ApplicationCommandRequest.builder()
-            .name("trigger")
-            .description("Triggers a report fetch and send for testing purposes")
-            .build();
+            .description("Triggers a report fetch and send for testing purposes");
     }
 
     @Override

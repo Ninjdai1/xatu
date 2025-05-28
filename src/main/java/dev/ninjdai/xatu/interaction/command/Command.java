@@ -2,10 +2,15 @@ package dev.ninjdai.xatu.interaction.command;
 
 import discord4j.core.event.domain.interaction.ApplicationCommandInteractionEvent;
 import discord4j.discordjson.json.ApplicationCommandRequest;
+import discord4j.discordjson.json.ImmutableApplicationCommandRequest;
+import org.apache.commons.lang3.NotImplementedException;
 import reactor.core.publisher.Mono;
 
 public interface Command {
-    ApplicationCommandRequest getCommand();
+    default String[] getName() {
+        throw new NotImplementedException("Missing command name");
+    };
+    ImmutableApplicationCommandRequest.Builder getCommandBuilder();
     Mono<Void> execute(ApplicationCommandInteractionEvent event);
 
     int SUBCOMMAND_OPTION_TYPE = 1;

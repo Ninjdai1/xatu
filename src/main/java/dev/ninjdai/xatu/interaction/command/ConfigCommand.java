@@ -9,8 +9,10 @@ import discord4j.core.object.command.ApplicationCommandInteractionOption;
 import discord4j.core.object.entity.Role;
 import discord4j.discordjson.json.ApplicationCommandOptionData;
 import discord4j.discordjson.json.ApplicationCommandRequest;
+import discord4j.discordjson.json.ImmutableApplicationCommandRequest;
 import reactor.core.publisher.Mono;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
@@ -18,9 +20,13 @@ import java.util.concurrent.atomic.AtomicReference;
 @AutoService(Command.class)
 public class ConfigCommand implements Command {
     @Override
-    public ApplicationCommandRequest getCommand() {
+    public String[] getName() {
+        return new String[]{"config"};
+    }
+
+    @Override
+    public ImmutableApplicationCommandRequest.Builder getCommandBuilder() {
         return ApplicationCommandRequest.builder()
-                .name("config")
                 .description("Configure the bot")
                 .addOption(ApplicationCommandOptionData.builder()
                         .type(SUBCOMMAND_OPTION_TYPE)
@@ -74,8 +80,7 @@ public class ConfigCommand implements Command {
                                 .description("Unix timestamp of the next patch release")
                                 .required(false)
                                 .build())
-                        .build())
-                .build();
+                        .build());
     }
 
     @Override

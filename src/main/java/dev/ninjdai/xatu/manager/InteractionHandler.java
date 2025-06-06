@@ -18,16 +18,14 @@ public class InteractionHandler {
         long applicationId = Main.DISCORD_CLIENT.getApplicationId().block();
 
         ServiceLoader<Command> commandServiceLoader = ServiceLoader.load(Command.class);
-        for (Command p : commandServiceLoader) {
-            for (String name: p.getName()) COMMANDS.put(name, p);
-            p.getCommandBuilder();
-        }
-
-        for (Command command: COMMANDS.values()) {
-            for (String alias: command.getName())
+        for (Command command : commandServiceLoader) {
+            for (String alias: command.getName()) {
+                COMMANDS.put(alias, command);
                 Main.DISCORD_CLIENT.getApplicationService()
                     .createGlobalApplicationCommand(applicationId, command.getCommandBuilder().name(alias).build())
                     .subscribe();
+            }
+            Main.LOGGER.info("Registered /%s command (%d aliases)".formatted(command.getName()[0], command.getName().length - 1));
         }
     }
 

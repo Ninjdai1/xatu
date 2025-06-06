@@ -248,6 +248,8 @@ public class DatabaseHandler {
             var rs = pstmt.executeQuery();
             if (rs.next()) {
                 return new Details(
+                    timestamp,
+
                     rs.getInt("opened_pr_1"),
                     rs.getInt("opened_pr_7"),
                     rs.getInt("opened_pr_30"),
@@ -277,5 +279,68 @@ public class DatabaseHandler {
             Main.LOGGER.error("Error getting details from database", e);
         }
         return null;
+    }
+
+    public static int getDetailsSize(String repo) {
+        var sql = "SELECT COUNT(*) FROM github_data WHERE repo = ?";
+
+        try (PreparedStatement pstmt = databaseConnection.prepareStatement(sql)) {
+            pstmt.setString(1, repo);
+
+            var rs = pstmt.executeQuery();
+            return rs.getInt("total");
+        } catch (SQLException e) {
+            Main.LOGGER.error("Error getting details size from database", e);
+        }
+        return 0;
+    }
+
+    public static Details[] getDetails(String repo) {
+        Details[] details = new Details[getDetailsSize(repo)];
+
+        var sql = "SELECT * FROM github_data WHERE repo = ?";
+
+        try (PreparedStatement pstmt = databaseConnection.prepareStatement(sql)) {
+            pstmt.setString(1, repo);
+
+            var rs = pstmt.executeQuery();
+            int i = 0;
+
+            while (rs.next()) {
+                details[i] = new Details(
+                        rs.getLong("timestamp"),
+
+                        rs.getInt("opened_pr_1"),
+                        rs.getInt("opened_pr_7"),
+                        rs.getInt("opened_pr_30"),
+                        rs.getInt("opened_pr_365"),
+                        rs.getInt("opened_pr_all"),
+
+                        rs.getInt("merged_pr_1"),
+                        rs.getInt("merged_pr_7"),
+                        rs.getInt("merged_pr_30"),
+                        rs.getInt("merged_pr_365"),
+                        rs.getInt("merged_pr_all"),
+
+                        rs.getInt("opened_issue_1"),
+                        rs.getInt("opened_issue_7"),
+                        rs.getInt("opened_issue_30"),
+                        rs.getInt("opened_issue_365"),
+                        rs.getInt("opened_issue_all"),
+
+                        rs.getInt("closed_issue_1"),
+                        rs.getInt("closed_issue_7"),
+                        rs.getInt("closed_issue_30"),
+                        rs.getInt("closed_issue_365"),
+                        rs.getInt("closed_issue_all")
+                );
+                i++;
+            }
+
+            return details;
+        } catch (SQLException e) {
+            Main.LOGGER.error("Error getting details from database", e);
+        }
+        return new Details[]{};
     }
 }

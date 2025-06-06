@@ -1,6 +1,8 @@
 package dev.ninjdai.xatu.data;
 
 public class Details{
+    public long timestamp = 0;
+
     public int opened_pr_1 = 0;
     public int opened_pr_7 = 0;
     public int opened_pr_30 = 0;
@@ -26,10 +28,13 @@ public class Details{
     public int closed_issue_all = 0;
 
     public Details(){};
-    public Details(int opened_pr_1, int opened_pr_7, int opened_pr_30, int opened_pr_365, int opened_pr_all,
+    public Details(long timestamp,
+            int opened_pr_1, int opened_pr_7, int opened_pr_30, int opened_pr_365, int opened_pr_all,
             int merged_pr_1, int merged_pr_7, int merged_pr_30, int merged_pr_365, int merged_pr_all,
             int opened_issue_1, int opened_issue_7, int opened_issue_30, int opened_issue_365, int opened_issue_all,
             int closed_issue_1, int closed_issue_7, int closed_issue_30, int closed_issue_365, int closed_issue_all) {
+        this.timestamp = timestamp;
+
         this.opened_pr_1 = opened_pr_1;
         this.opened_pr_7 = opened_pr_7;
         this.opened_pr_30 = opened_pr_30;

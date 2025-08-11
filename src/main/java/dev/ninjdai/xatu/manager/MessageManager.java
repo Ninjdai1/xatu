@@ -47,6 +47,12 @@ public class MessageManager {
                     if (msg != null) MESSAGE_REPLY_MAP.put(event.getMessage().getId(), msg.getId());
                 }).subscribe();
         }
+
+        if (event.getMessage().getContent().toLowerCase().matches(".*thank.*xatu.*")) {
+            event.getMessage().addReaction(Emoji.unicode("\uD83D\uDC9A"));
+        } else if (event.getMessage().getContent().toLowerCase().matches(".*hi.*xatu.*")) {
+            event.getMessage().addReaction(Emoji.unicode("\uD83D\uDC4B"));
+        }
         return Mono.empty();
     }
 

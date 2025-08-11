@@ -49,9 +49,9 @@ public class MessageManager {
         }
 
         if (event.getMessage().getContent().toLowerCase().matches(".*thank.*xatu.*")) {
-            event.getMessage().addReaction(Emoji.unicode("\uD83D\uDC9A"));
+            event.getMessage().addReaction(Emoji.unicode("\uD83D\uDC9A")).subscribe();
         } else if (event.getMessage().getContent().toLowerCase().matches(".*hi.*xatu.*")) {
-            event.getMessage().addReaction(Emoji.unicode("\uD83D\uDC4B"));
+            event.getMessage().addReaction(Emoji.unicode("\uD83D\uDC4B")).subscribe();
         }
         return Mono.empty();
     }

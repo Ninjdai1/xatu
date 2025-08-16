@@ -1,5 +1,8 @@
 package dev.ninjdai.xatu.manager;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.ninjdai.xatu.Main;
 import discord4j.common.util.Snowflake;
 import discord4j.core.event.domain.message.MessageCreateEvent;
@@ -18,6 +21,9 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.kohsuke.github.GHIssue;
 import reactor.core.publisher.Mono;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -27,6 +33,7 @@ public class MessageManager {
     public static final Pattern FORMATTED_LINK_CONTENT_REGEX = Pattern.compile("\\[(.*?)\\]\\(.*?\\)");
     public static final Pattern RHH_MATCHES_REGEX = Pattern.compile("(^|\\s)#\\d+");
     public static final Pattern PRET_MATCHES_REGEX = Pattern.compile("(^|\\s)pret#\\d+");
+    public static final Pattern XKCD_MATCHES_REGEX = Pattern.compile("(^|\\s)xkcd#\\d+");
 
     public static final Emoji EMOJI_ISSUE_CLOSED = Emoji.of(1333157204429377566L, "issue_closed", false);
     public static final Emoji EMOJI_ISSUE_OPEN = Emoji.of(1333157206740439051L, "issue_open", false);
@@ -99,6 +106,11 @@ public class MessageManager {
             if (issueNumber <= 20) continue;
             issues.add(Pair.of("pret", issueNumber));
         }
+        Matcher xkcdMatcher = XKCD_MATCHES_REGEX.matcher(messageContent);
+        while (issues.size()<5 && xkcdMatcher.find()) {
+            int xkcdNumber = Integer.parseInt(xkcdMatcher.group().replace("#", "").replace("xkcd", "").strip());
+            issues.add(Pair.of("xkcd", xkcdNumber));
+        }
 
         LayoutComponent[] replyButtons = new LayoutComponent[issues.size()];
         issues.parallelStream().forEach(pair -> {
@@ -108,11 +120,22 @@ public class MessageManager {
                     String btnName = "#%d - %s".formatted(pair.getRight(), issue.getTitle());
                     replyButtons[issues.indexOf(pair)] = ActionRow.of(Button.link(issue.getHtmlUrl().toString(), getIssueEmoji(issue), btnName.length() > 80 ? btnName.substring(0, 77) + "..." : btnName));
                 }
-            } else {
+            } else if (Objects.equals(pair.getLeft(), "pret")) {
                 GHIssue issue = GithubHandler.getIssue("pret/pokeemerald", pair.getRight());
                 if (issue != null) {
                     String btnName = "pret#%d - %s".formatted(pair.getRight(), issue.getTitle());
                     replyButtons[issues.indexOf(pair)] = ActionRow.of(Button.link(issue.getHtmlUrl().toString(), getIssueEmoji(issue), btnName.length() > 80 ? btnName.substring(0, 77) + "..." : btnName));
+                }
+            } else if (Objects.equals(pair.getLeft(), "xkcd")) {
+                ObjectMapper mapper = new ObjectMapper();
+                try {
+                    JsonNode xkcdJson = mapper.readTree(URI.create(String.format("https://xkcd.com/%d/info.0.json", pair.getRight())).toURL());
+                    if (xkcdJson != null) {
+                        String btnName = "xkcd#%d - %s".formatted(pair.getRight(), xkcdJson.get("safe_title").asText());
+                        replyButtons[issues.indexOf(pair)] = ActionRow.of(Button.link(String.format("https://xkcd.com/%d/", pair.getRight()), Emoji.unicode("\uD83D\uDC40"), btnName.length() > 80 ? btnName.substring(0, 77) + "..." : btnName));
+                    }
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
                 }
             }
         });

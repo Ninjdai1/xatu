@@ -2,6 +2,7 @@ package dev.ninjdai.xatu.interaction.command;
 
 import com.google.auto.service.AutoService;
 import dev.ninjdai.xatu.manager.DatabaseHandler;
+import dev.ninjdai.xatu.Main;
 import dev.ninjdai.xatu.Utils;
 import dev.ninjdai.xatu.data.Semver;
 import dev.ninjdai.xatu.data.ServerMetadata;
@@ -19,7 +20,7 @@ import java.util.Optional;
 public class ReleaseCommand implements Command {
     @Override
     public String[] getName() {
-        return new String[]{"release"};
+        return new String[] { "release" };
     }
 
     @Override
@@ -47,18 +48,33 @@ public class ReleaseCommand implements Command {
             return event.reply("Current version unknown, please contact a senate member").withEphemeral(true);
         }
 
-        Optional<ApplicationCommandInteractionOption> ephemeralOption = event.getInteraction().getCommandInteraction().get().getOption("ephemeral");
+        Optional<ApplicationCommandInteractionOption> ephemeralOption = event.getInteraction().getCommandInteraction()
+                .get().getOption("ephemeral");
         long unixTime = System.currentTimeMillis() / 1000L;
         String reply = "";
         Semver currentSemver = new Semver(metadata.current_version);
+        Main.LOGGER.info("Displaying metadata: {}", metadata);
         if (metadata.patch_release_timestamp != null && metadata.patch_release_timestamp > unixTime) {
-            reply += "> The next **patch release**, version `%s`, is planned to release <t:%d:R> on <t:%d:f>\n".formatted(currentSemver.nextPatch(), metadata.patch_release_timestamp, metadata.patch_release_timestamp);
+            reply += "> The next **patch release**, version `%s`, is planned to release <t:%d:R> on <t:%d:f>\n"
+                    .formatted(currentSemver.nextPatch(), metadata.patch_release_timestamp,
+                            metadata.patch_release_timestamp);
         }
         if (metadata.minor_release_timestamp != null && metadata.minor_release_timestamp > unixTime) {
-            reply += "> The next **minor release**, version `%s`, is planned to release <t:%d:R> on <t:%d:f>\n".formatted(currentSemver.nextMinor(), metadata.minor_release_timestamp, metadata.minor_release_timestamp);
-            reply += "> * Big features will not be merged after <t:%d:f> (<t:%d:R>)\n".formatted(metadata.minor_release_timestamp - Utils.DAY_LENGTH_IN_SECONDS * 30, metadata.minor_release_timestamp - Utils.DAY_LENGTH_IN_SECONDS * 30);
-            reply += "> * Non-bugfixes will not be merged after <t:%d:f> (<t:%d:R>)\n".formatted(metadata.minor_release_timestamp - Utils.DAY_LENGTH_IN_SECONDS * 14, metadata.minor_release_timestamp - Utils.DAY_LENGTH_IN_SECONDS * 14);
+            reply += "> The next **minor release**, version `%s`, is planned to release <t:%d:R> on <t:%d:f>\n"
+                    .formatted(currentSemver.nextMinor(), metadata.minor_release_timestamp,
+                            metadata.minor_release_timestamp);
+            reply += "> * Big features will not be merged after <t:%d:f> (<t:%d:R>)\n".formatted(
+                    metadata.minor_release_timestamp - Utils.DAY_LENGTH_IN_SECONDS * 30,
+                    metadata.minor_release_timestamp - Utils.DAY_LENGTH_IN_SECONDS * 30);
+            reply += "> * Non-bugfixes will not be merged after <t:%d:f> (<t:%d:R>)\n".formatted(
+                    metadata.minor_release_timestamp - Utils.DAY_LENGTH_IN_SECONDS * 14,
+                    metadata.minor_release_timestamp - Utils.DAY_LENGTH_IN_SECONDS * 14);
         }
+
+        if (metadata.minor_release_timestamp <= unixTime) {
+            reply += "Configured releases already happened, please ask a senate member to update them";
+        }
+
         InteractionApplicationCommandCallbackReplyMono replyMono = event.reply(reply);
         return replyMono.withEphemeral(ephemeralOption.isEmpty() || ephemeralOption.get().getValue().get().asBoolean());
     }

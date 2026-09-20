@@ -1,6 +1,5 @@
 package dev.ninjdai.xatu.manager;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.ninjdai.xatu.Main;
@@ -10,7 +9,7 @@ import discord4j.core.event.domain.message.MessageDeleteEvent;
 import discord4j.core.event.domain.message.MessageUpdateEvent;
 import discord4j.core.object.component.ActionRow;
 import discord4j.core.object.component.Button;
-import discord4j.core.object.component.LayoutComponent;
+import discord4j.core.object.component.TopLevelMessageComponent;
 import discord4j.core.object.emoji.Emoji;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.channel.MessageChannel;
@@ -22,7 +21,6 @@ import org.kohsuke.github.GHIssue;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -43,16 +41,14 @@ public class MessageManager {
     public static final Map<Snowflake, Snowflake> MESSAGE_REPLY_MAP = new HashMap<>();
 
     public static Mono<Void> execute(MessageCreateEvent event) {
-        List<LayoutComponent> replyButtons = getMessageButtons(event.getMessage().getContent());
+        List<TopLevelMessageComponent> replyButtons = getMessageButtons(event.getMessage().getContent());
         if (!replyButtons.isEmpty()) {
             MessageChannel channel = event.getMessage().getChannel().block();
             if (channel != null) channel.createMessage(MessageCreateSpec.builder()
                 .components(replyButtons)
                 .messageReference(MessageReferenceData.builder().messageId(event.getMessage().getId().asLong()).build())
                 .allowedMentions(AllowedMentions.builder().build())
-                .build()).doOnSuccess(msg -> {
-                    if (msg != null) MESSAGE_REPLY_MAP.put(event.getMessage().getId(), msg.getId());
-                }).subscribe();
+                .build()).doOnSuccess(msg -> MESSAGE_REPLY_MAP.put(event.getMessage().getId(), msg.getId())).subscribe();
         }
 
         if (event.getMessage().getContent().toLowerCase().matches(".*thank.*xatu.*")) {
@@ -67,10 +63,10 @@ public class MessageManager {
         if (!event.isContentChanged()) return Mono.empty();
         Message message = event.getMessage().block();
         if (message == null || !MESSAGE_REPLY_MAP.containsKey(event.getMessageId())) return Mono.empty();
-        List<LayoutComponent> replyButtons = getMessageButtons(message.getContent());
+        List<TopLevelMessageComponent> replyButtons = getMessageButtons(message.getContent());
         if (!replyButtons.isEmpty()) {
             return Main.DISCORD_CLIENT.getMessageById(message.getChannelId(), MESSAGE_REPLY_MAP.get(event.getMessageId()))
-                    .edit(MessageEditRequest.builder().components(getComponentsData(replyButtons)).build());
+                    .edit(MessageEditRequest.builder().componentsOrNull(getComponentsData(replyButtons)).build());
         }
         return Mono.empty();
     }
@@ -83,15 +79,15 @@ public class MessageManager {
         return Mono.empty();
     }
 
-    private static List<ComponentData> getComponentsData(List<LayoutComponent> layoutComponents) {
+    private static List<ComponentData> getComponentsData(List<TopLevelMessageComponent> layoutComponents) {
         List<ComponentData> list = new ArrayList<>();
-        for (LayoutComponent layoutComponent: layoutComponents) {
+        for (TopLevelMessageComponent layoutComponent: layoutComponents) {
             list.add(layoutComponent.getData());
         }
         return list;
     }
 
-    private static List<LayoutComponent> getMessageButtons(String initialMessageContent) {
+    private static List<TopLevelMessageComponent> getMessageButtons(String initialMessageContent) {
         String messageContent = initialMessageContent.replaceAll(BACK_QUOTE_CONTENT_REGEX.pattern(), "").replaceAll(FORMATTED_LINK_CONTENT_REGEX.pattern(), "");
         Matcher rhhMatcher = RHH_MATCHES_REGEX.matcher(messageContent);
         List<Pair<String, Integer>> issues = new ArrayList<>();
@@ -112,7 +108,7 @@ public class MessageManager {
             issues.add(Pair.of("xkcd", xkcdNumber));
         }
 
-        LayoutComponent[] replyButtons = new LayoutComponent[issues.size()];
+        TopLevelMessageComponent[] replyButtons = new TopLevelMessageComponent[issues.size()];
         issues.parallelStream().forEach(pair -> {
             if (Objects.equals(pair.getLeft(), "rhh")) {
                 GHIssue issue = GithubHandler.getIssue("rh-hideout/pokeemerald-expansion", pair.getRight());

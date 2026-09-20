@@ -43,6 +43,20 @@ public class GithubHandler {
         }
     }
 
+    public static int getLatestIssueNumber(String repoName) {
+        PagedSearchIterable<GHIssue> results = GITHUB.searchIssues()
+                .q("repo:" + repoName)
+                .sort(GHIssueSearchBuilder.Sort.CREATED)
+                .order(GHDirection.DESC)
+                .list();
+
+        if (results.iterator().hasNext()) {
+            GHIssue latest = results.iterator().next();
+            return latest.getNumber();
+        }
+        return 0;
+    }
+
     public static RepoData getRepoData(ServerConfig serverConfig) {
         if (GITHUB == null)
             return null;

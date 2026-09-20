@@ -26,8 +26,10 @@ public class DataSendingJob implements Job {
             channel.createMessage(data.embed().asRequest()).subscribe();
             if (serverConfig.second_channel_id != null) Main.DISCORD_CLIENT.getChannelById(serverConfig.second_channel_id).createMessage(data.embed().asRequest()).subscribe();
             DatabaseHandler.registerDetails(data.repo(), data.timestamp(), data.details());
-            Main.DISCORD_CLIENT.withGateway(gatewayDiscordClient -> gatewayDiscordClient.updatePresence(
-                    ClientPresence.online(ClientActivity.custom("Foreseeing " + data.details().opened_issue_all + " years in the future")))).block();
         }
+
+        Main.DISCORD_CLIENT.withGateway(gatewayDiscordClient -> gatewayDiscordClient.updatePresence(
+                ClientPresence.online(ClientActivity.custom("Foreseeing " + (GithubHandler.getLatestIssueNumber(serverConfig.repo_name)) + " years in the future")))).block();
+
     }
 }

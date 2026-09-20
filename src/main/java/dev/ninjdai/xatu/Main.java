@@ -49,11 +49,10 @@ public class Main {
         }
         LOGGER.info("{} servers loaded", serverConfigList.size());
 
-        Details latest = DatabaseHandler.getLatestDetails("rh-hideout/pokeemerald-expansion");
         Mono<Void> login = DISCORD_CLIENT
                 .gateway()
                 .setEnabledIntents(IntentSet.of(Intent.GUILD_MESSAGES, Intent.MESSAGE_CONTENT))
-                .setInitialPresence(s -> ClientPresence.online(ClientActivity.custom("Foreseeing " + (latest != null ? latest.opened_issue_all : 0) + " years in the future")))
+                .setInitialPresence(s -> ClientPresence.online(ClientActivity.custom("Foreseeing " + GithubHandler.getLatestIssueNumber("rh-hideout/pokeemerald-expansion") + " years in the future")))
                 .withGateway((GatewayDiscordClient gateway) -> {
             Mono<Void> printOnLogin = gateway.on(ReadyEvent.class, event ->
                             Mono.fromRunnable(() -> {

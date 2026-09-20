@@ -43,18 +43,17 @@ public class Main {
         DatabaseHandler.init("jdbc:sqlite:%s/xatu.db".formatted(System.getenv("DB_DIR") != null ? System.getenv("DB_DIR") : "."));
         SchedulerManager.init();
 
-        {
-            List<ServerConfig> serverConfigList = DatabaseHandler.getServers();
-            for (ServerConfig serverConfig : serverConfigList) {
-                SchedulerManager.addServerJob(serverConfig);
-            }
-            LOGGER.info("{} servers loaded", serverConfigList.size());
+        List<ServerConfig> serverConfigList = DatabaseHandler.getServers();
+        for (ServerConfig serverConfig : serverConfigList) {
+            SchedulerManager.addServerJob(serverConfig);
         }
+        LOGGER.info("{} servers loaded", serverConfigList.size());
 
+        Details latest = DatabaseHandler.getLatestDetails("rh-hideout/pokeemerald-expansion");
         Mono<Void> login = DISCORD_CLIENT
                 .gateway()
                 .setEnabledIntents(IntentSet.of(Intent.GUILD_MESSAGES, Intent.MESSAGE_CONTENT))
-                .setInitialPresence(s -> ClientPresence.online(ClientActivity.custom("Foreseeing " + new Random().nextInt(0, 10000) + " years in the future")))
+                .setInitialPresence(s -> ClientPresence.online(ClientActivity.custom("Foreseeing " + (latest != null ? latest.opened_issue_all : 0) + " years in the future")))
                 .withGateway((GatewayDiscordClient gateway) -> {
             Mono<Void> printOnLogin = gateway.on(ReadyEvent.class, event ->
                             Mono.fromRunnable(() -> {

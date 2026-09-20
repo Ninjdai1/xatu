@@ -6,10 +6,14 @@ import dev.ninjdai.xatu.manager.DatabaseHandler;
 import dev.ninjdai.xatu.manager.GithubHandler;
 import discord4j.core.object.component.ActionRow;
 import discord4j.core.object.component.Button;
+import discord4j.core.object.presence.ClientActivity;
+import discord4j.core.object.presence.ClientPresence;
 import discord4j.core.spec.MessageCreateSpec;
 import discord4j.rest.entity.RestChannel;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
+
+import java.util.Random;
 
 public class DataSendingJob implements Job {
     public void execute(JobExecutionContext jobExecutionContext) {
@@ -22,6 +26,8 @@ public class DataSendingJob implements Job {
             channel.createMessage(data.embed().asRequest()).subscribe();
             if (serverConfig.second_channel_id != null) Main.DISCORD_CLIENT.getChannelById(serverConfig.second_channel_id).createMessage(data.embed().asRequest()).subscribe();
             DatabaseHandler.registerDetails(data.repo(), data.timestamp(), data.details());
+            Main.DISCORD_CLIENT.withGateway(gatewayDiscordClient -> gatewayDiscordClient.updatePresence(
+                    ClientPresence.online(ClientActivity.custom("Foreseeing " + data.details().opened_issue_all + " years in the future")))).block();
         }
     }
 }

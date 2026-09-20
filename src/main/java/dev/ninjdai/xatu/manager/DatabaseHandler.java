@@ -343,4 +343,47 @@ public class DatabaseHandler {
         }
         return new Details[]{};
     }
+
+    public static Details getLatestDetails(String repo) {
+        var sql = "SELECT * FROM github_data WHERE repo = ? ORDER BY timestamp DESC LIMIT 1";
+
+        try (PreparedStatement pstmt = databaseConnection.prepareStatement(sql)) {
+            pstmt.setString(1, repo);
+
+            var rs = pstmt.executeQuery();
+
+            if (rs.first()) {
+                return new Details(
+                        rs.getLong("timestamp"),
+
+                        rs.getInt("opened_pr_1"),
+                        rs.getInt("opened_pr_7"),
+                        rs.getInt("opened_pr_30"),
+                        rs.getInt("opened_pr_365"),
+                        rs.getInt("opened_pr_all"),
+
+                        rs.getInt("merged_pr_1"),
+                        rs.getInt("merged_pr_7"),
+                        rs.getInt("merged_pr_30"),
+                        rs.getInt("merged_pr_365"),
+                        rs.getInt("merged_pr_all"),
+
+                        rs.getInt("opened_issue_1"),
+                        rs.getInt("opened_issue_7"),
+                        rs.getInt("opened_issue_30"),
+                        rs.getInt("opened_issue_365"),
+                        rs.getInt("opened_issue_all"),
+
+                        rs.getInt("closed_issue_1"),
+                        rs.getInt("closed_issue_7"),
+                        rs.getInt("closed_issue_30"),
+                        rs.getInt("closed_issue_365"),
+                        rs.getInt("closed_issue_all")
+                );
+            }
+        } catch (SQLException e) {
+            Main.LOGGER.error("Error getting details from database", e);
+        }
+        return null;
+    }
 }
